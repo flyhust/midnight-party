@@ -342,10 +342,9 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold-h
   .actionbar > .why { display: none; }
   .reveal .flip { width: 190px; height: 266px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
-  .flip .inner { transition: none; }
-}
+/* 动态效果开关（设置里可关）：关掉后停掉装饰动画 */
+html.no-motion *, html.no-motion *::before, html.no-motion *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+html.no-motion .flip .inner { transition: none; }
 </style>
 
 <div id="app"></div>

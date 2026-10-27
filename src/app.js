@@ -31,6 +31,8 @@
   let endIds = null, latest = null, lastSeq = -1, queue = [], playing = false, shownMsgs = new Set(), privQ = [], promptN = 0, drawn = false, inGame = false, resultShown = false;
   const settings = { players: 4, diff: 'normal', name: '' };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('mp_settings') || '{}')); } catch (e) {}
+  const motionOn = () => settings.motion !== false;
+  const applyMotion = () => { document.documentElement.classList.toggle('no-motion', !motionOn()); Scene.setMotion(motionOn()); };
   const saveSettings = () => { try { localStorage.setItem('mp_settings', JSON.stringify(settings)); } catch (e) {} };
 
   // ---------- 工具 ----------
@@ -158,11 +160,12 @@
 
   // ---------- 单人设置 ----------
   function soundChips() {
-    return `<div class="field"><label>声音</label><div class="chips"><button class="chip" id="snd" aria-pressed="${SFX.on}">音效 ${SFX.on ? '开' : '关'}</button><button class="chip" id="mus" aria-pressed="${Music.on}">背景音乐 ${Music.on ? '开' : '关'}</button></div></div>`;
+    return `<div class="field"><label>声音与画面</label><div class="chips"><button class="chip" id="snd" aria-pressed="${SFX.on}">音效 ${SFX.on ? '开' : '关'}</button><button class="chip" id="mus" aria-pressed="${Music.on}">背景音乐 ${Music.on ? '开' : '关'}</button><button class="chip" id="mot" aria-pressed="${motionOn()}">动态效果 ${motionOn() ? '开' : '关'}</button></div></div>`;
   }
   function wireSound(s) {
     s.querySelector('#snd').onclick = e => { const on = SFX.toggle(); e.target.textContent = `音效 ${on ? '开' : '关'}`; e.target.setAttribute('aria-pressed', on); sfx('uiClick'); };
     s.querySelector('#mus').onclick = e => { const on = Music.toggle(); e.target.textContent = `背景音乐 ${on ? '开' : '关'}`; e.target.setAttribute('aria-pressed', on); sfx('uiClick'); };
+    s.querySelector('#mot').onclick = e => { settings.motion = !motionOn(); saveSettings(); applyMotion(); e.target.textContent = `动态效果 ${motionOn() ? '开' : '关'}`; e.target.setAttribute('aria-pressed', motionOn()); sfx('uiClick'); };
   }
   function countChips(id, val, min = 2) { return `<div class="chips" id="${id}">${[2, 3, 4, 5, 6, 7, 8].map(n => `<button class="chip" aria-pressed="${n === val}" data-n="${n}" ${n < min ? 'disabled' : ''}>${n}</button>`).join('')}</div>`; }
   function diffChips(val) { return `<div class="chips" id="df">${[['easy', '新手'], ['normal', '普通'], ['hard', '老狐狸']].map(([k, l]) => `<button class="chip" aria-pressed="${k === val}" data-d="${k}">${l}</button>`).join('')}</div>`; }
@@ -990,5 +993,6 @@
 
   window.__mp = { get G() { return G; }, get priv() { return priv; }, setFast: v => (fast = v) };
   Scene.mount();
+  applyMotion();
   showTitle();
 })();

@@ -342,10 +342,9 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold-h
   .actionbar > .why { display: none; }
   .reveal .flip { width: 190px; height: 266px; }
 }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
-  .flip .inner { transition: none; }
-}
+/* 动态效果开关（设置里可关）：关掉后停掉装饰动画 */
+html.no-motion *, html.no-motion *::before, html.no-motion *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+html.no-motion .flip .inner { transition: none; }
 </style>
 
 <div id="app"></div>
@@ -928,7 +927,7 @@ const Music = (() => {
 // ===== 背景场景：一九二七 · 某个下雨的夜晚，豪宅派对 =====
 const Scene = (() => {
   let root = null, cv = null, ctx = null, drops = [], splashes = [], raf = 0, w = 0, h = 0, flashEl = null, mode = 'full', boltT = 0;
-  const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let reduce = false;
   const rnd = (a, b) => a + Math.random() * (b - a);
   // 种子随机：保证每次画出的窗户一样
   let sd = 7; const sr = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
@@ -1068,7 +1067,8 @@ const Scene = (() => {
     document.addEventListener('visibilitychange', () => { cancelAnimationFrame(raf); if (!document.hidden && !reduce) raf = requestAnimationFrame(frame); });
   }
   function setMode(m) { mode = m; if (root) root.dataset.mode = m; }
-  return { mount, setMode };
+  function setMotion(on) { reduce = !on; cancelAnimationFrame(raf); if (on && root) raf = requestAnimationFrame(frame); else if (ctx) ctx.clearRect(0, 0, w, h); }
+  return { mount, setMode, setMotion };
 })();
 
 // ===== 联机层：主机裁判 + 端到端加密的私密信息 =====
@@ -1536,6 +1536,8 @@ const Net = (() => {
   let endIds = null, latest = null, lastSeq = -1, queue = [], playing = false, shownMsgs = new Set(), privQ = [], promptN = 0, drawn = false, inGame = false, resultShown = false;
   const settings = { players: 4, diff: 'normal', name: '' };
   try { Object.assign(settings, JSON.parse(localStorage.getItem('mp_settings') || '{}')); } catch (e) {}
+  const motionOn = () => settings.motion !== false;
+  const applyMotion = () => { document.documentElement.classList.toggle('no-motion', !motionOn()); Scene.setMotion(motionOn()); };
   const saveSettings = () => { try { localStorage.setItem('mp_settings', JSON.stringify(settings)); } catch (e) {} };
 
   // ---------- 工具 ----------
@@ -1663,11 +1665,12 @@ const Net = (() => {
 
   // ---------- 单人设置 ----------
   function soundChips() {
-    return `<div class="field"><label>声音</label><div class="chips"><button class="chip" id="snd" aria-pressed="${SFX.on}">音效 ${SFX.on ? '开' : '关'}</button><button class="chip" id="mus" aria-pressed="${Music.on}">背景音乐 ${Music.on ? '开' : '关'}</button></div></div>`;
+    return `<div class="field"><label>声音与画面</label><div class="chips"><button class="chip" id="snd" aria-pressed="${SFX.on}">音效 ${SFX.on ? '开' : '关'}</button><button class="chip" id="mus" aria-pressed="${Music.on}">背景音乐 ${Music.on ? '开' : '关'}</button><button class="chip" id="mot" aria-pressed="${motionOn()}">动态效果 ${motionOn() ? '开' : '关'}</button></div></div>`;
   }
   function wireSound(s) {
     s.querySelector('#snd').onclick = e => { const on = SFX.toggle(); e.target.textContent = `音效 ${on ? '开' : '关'}`; e.target.setAttribute('aria-pressed', on); sfx('uiClick'); };
     s.querySelector('#mus').onclick = e => { const on = Music.toggle(); e.target.textContent = `背景音乐 ${on ? '开' : '关'}`; e.target.setAttribute('aria-pressed', on); sfx('uiClick'); };
+    s.querySelector('#mot').onclick = e => { settings.motion = !motionOn(); saveSettings(); applyMotion(); e.target.textContent = `动态效果 ${motionOn() ? '开' : '关'}`; e.target.setAttribute('aria-pressed', motionOn()); sfx('uiClick'); };
   }
   function countChips(id, val, min = 2) { return `<div class="chips" id="${id}">${[2, 3, 4, 5, 6, 7, 8].map(n => `<button class="chip" aria-pressed="${n === val}" data-n="${n}" ${n < min ? 'disabled' : ''}>${n}</button>`).join('')}</div>`; }
   function diffChips(val) { return `<div class="chips" id="df">${[['easy', '新手'], ['normal', '普通'], ['hard', '老狐狸']].map(([k, l]) => `<button class="chip" aria-pressed="${k === val}" data-d="${k}">${l}</button>`).join('')}</div>`; }
@@ -2495,6 +2498,7 @@ const Net = (() => {
 
   window.__mp = { get G() { return G; }, get priv() { return priv; }, setFast: v => (fast = v) };
   Scene.mount();
+  applyMotion();
   showTitle();
 })();
 

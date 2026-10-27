@@ -1,7 +1,7 @@
 // ===== 背景场景：一九二七 · 某个下雨的夜晚，豪宅派对 =====
 const Scene = (() => {
   let root = null, cv = null, ctx = null, drops = [], splashes = [], raf = 0, w = 0, h = 0, flashEl = null, mode = 'full', boltT = 0;
-  const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let reduce = false;
   const rnd = (a, b) => a + Math.random() * (b - a);
   // 种子随机：保证每次画出的窗户一样
   let sd = 7; const sr = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
@@ -141,5 +141,6 @@ const Scene = (() => {
     document.addEventListener('visibilitychange', () => { cancelAnimationFrame(raf); if (!document.hidden && !reduce) raf = requestAnimationFrame(frame); });
   }
   function setMode(m) { mode = m; if (root) root.dataset.mode = m; }
-  return { mount, setMode };
+  function setMotion(on) { reduce = !on; cancelAnimationFrame(raf); if (on && root) raf = requestAnimationFrame(frame); else if (ctx) ctx.clearRect(0, 0, w, h); }
+  return { mount, setMode, setMotion };
 })();
