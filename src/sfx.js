@@ -68,6 +68,7 @@ const SFX = (() => {
     win: () => { chord([523, 659, 784], { d: 0.25, v: 0.1, type: 'square', arp: 0.12 }); chord([1047, 1319, 1568], { d: 0.9, v: 0.08, type: 'triangle', at: 0.45 }); for (let i = 0; i < 6; i++) noise({ d: 0.12, v: 0.1, f: 3000, q: 1, at: 0.5 + i * 0.12 }); },
     lose: () => [392, 349, 311, 262].forEach((f, i) => tone({ f, d: 0.45, v: 0.1, type: 'triangle', at: i * 0.3 })),
     dawn: () => chord([392, 494, 587, 784], { d: 1.4, v: 0.07, type: 'sine', arp: 0.2, a: 0.1 }),
+    thunder: () => { noise({ d: 2.6, v: 0.32, ft: 'lowpass', f: 180, to: 60, a: 0.25 }); noise({ d: 1.2, v: 0.14, ft: 'lowpass', f: 400, to: 90, at: 0.15, a: 0.05 }); },
     chaos: () => { noise({ d: 0.25, v: 0.15, f: 800, to: 3000, q: 2 }); tone({ f: 200, to: 500, d: 0.25, v: 0.06, type: 'square' }); },
   };
   return {

@@ -106,8 +106,8 @@
   }
 
   // ---------- 标题 ----------
-  function stopSession() { session++; if (conn) { try { conn.stop(); } catch (e) {} } conn = null; inGame = false; document.querySelectorAll('.overlay').forEach(o => o.remove()); }
-  function showTitle() {
+  function stopSession() { document.querySelectorAll('.cast-pop').forEach(p => p.remove()); session++; if (conn) { try { conn.stop(); } catch (e) {} } conn = null; inGame = false; document.querySelectorAll('.overlay').forEach(o => o.remove()); }
+  function showTitle() { Scene.setMode('full');
     stopSession();
     app.innerHTML = '';
     const s = h(`<section class="screen" id="title"><div class="marquee">
@@ -116,13 +116,44 @@
       <div class="title-cn">暗夜派对</div>
       <div class="deco-rule" style="margin:4px auto 18px;max-width:240px"></div>
       <p class="tagline">二十位宾客，几张假面。你是其中一人，你的对手也藏在人群里。在天亮前，成为最后一个活着的玩家。</p>
-      <div class="cast-flow" aria-hidden="true">${[[0, 3, 6, 10, 16, 11, 2, 13, 17, 8], [14, 5, 19, 1, 12, 9, 15, 4, 18, 7]].map((row, r) => `<div class="cast-row ${r ? 'rev' : ''}"><div class="cast-track">${[...row, ...row].map((c, i) => `<div class="mini" style="--d:${((i * 0.37) % 3).toFixed(2)}s"><div class="mini-in">${Art.portrait(c)}</div><span>${E.CHARS[c][0]}</span></div>`).join('')}</div></div>`).join('')}</div>
+      <div class="cast-flow" aria-label="今晚的二十位宾客">${[[0, 3, 6, 10, 16, 11, 2, 13, 17, 8], [14, 5, 19, 1, 12, 9, 15, 4, 18, 7]].map((row, r) => `<div class="cast-row ${r ? 'rev' : ''}"><div class="cast-track">${[...row, ...row].map((c, i) => `<div class="mini" data-c="${c}" tabindex="0" style="--d:${((i * 0.37) % 3).toFixed(2)}s"><div class="mini-in">${Art.portrait(c)}</div><span>${E.CHARS[c][0]}</span></div>`).join('')}</div></div>`).join('')}</div>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn primary" id="solo" style="padding:14px 26px;font-size:16px">单人对战 AI</button><button class="btn" id="online" style="padding:14px 26px;font-size:16px">和朋友联机</button></div>
       <div class="hint" style="margin-top:14px">建议开启声音</div></div></section>`);
     app.append(s);
+    wireCast(s.querySelector('.cast-flow'));
     const unlock = () => { SFX.init(); Music.init(); Music.setMode('party'); Music.start(); };
     s.querySelector('#solo').onclick = () => { unlock(); sfx('uiClick'); showSetup(); };
     s.querySelector('#online').onclick = () => { unlock(); sfx('uiClick'); showOnline(); };
+  }
+
+  // 封面宾客档案：指着某人时两排都停下，翻出他的档案卡
+  function wireCast(flow) {
+    if (!flow) return;
+    let pop = null, cur = null;
+    const hide = () => { flow.classList.remove('paused'); if (pop) { const p = pop; p.classList.add('out'); setTimeout(() => p.remove(), 180); pop = null; } cur = null; };
+    const show = el => {
+      if (cur === el) return;
+      hide(); cur = el; flow.classList.add('paused');
+      const c = +el.dataset.c;
+      pop = h(`<div class="cast-pop" role="tooltip"><div class="cp-pic">${Art.portrait(c)}</div><div class="cp-txt"><div class="eyebrow">宾客档案 · No.${String(c + 1).padStart(2, '0')}</div><div class="cp-nm">${E.CHARS[c][0]}</div><div class="cp-bio">${E.CHARS[c][1]}</div><div class="cp-hint">也许今晚，你就是他。</div></div></div>`);
+      document.body.append(pop);
+      const r = el.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
+      let x = r.left + r.width / 2 - pw / 2, y = r.top - ph - 12;
+      if (y < 8) y = r.bottom + 12;
+      x = Math.max(8, Math.min(innerWidth - pw - 8, x));
+      pop.style.left = x + 'px'; pop.style.top = y + 'px';
+      pop.style.setProperty('--ax', (r.left + r.width / 2 - x) + 'px');
+      pop.classList.toggle('below', y > r.top);
+      sfx('cardFlip');
+    };
+    flow.querySelectorAll('.mini').forEach(el => {
+      el.addEventListener('mouseenter', () => show(el));
+      el.addEventListener('focus', () => show(el));
+      el.addEventListener('click', () => (cur === el ? hide() : show(el)));
+    });
+    flow.addEventListener('mouseleave', hide);
+    flow.addEventListener('focusout', e => { if (!flow.contains(e.relatedTarget)) hide(); });
+    document.addEventListener('pointerdown', e => { if (cur && !flow.contains(e.target)) hide(); });
   }
 
   // ---------- 单人设置 ----------
@@ -136,7 +167,7 @@
   function countChips(id, val, min = 2) { return `<div class="chips" id="${id}">${[2, 3, 4, 5, 6, 7, 8].map(n => `<button class="chip" aria-pressed="${n === val}" data-n="${n}" ${n < min ? 'disabled' : ''}>${n}</button>`).join('')}</div>`; }
   function diffChips(val) { return `<div class="chips" id="df">${[['easy', '新手'], ['normal', '普通'], ['hard', '老狐狸']].map(([k, l]) => `<button class="chip" aria-pressed="${k === val}" data-d="${k}">${l}</button>`).join('')}</div>`; }
   function wireChips(s, sel, attr, cb) { s.querySelectorAll(sel + ' .chip').forEach(b => (b.onclick = () => { if (b.disabled) return; sfx('uiClick'); s.querySelectorAll(sel + ' .chip').forEach(x => x.setAttribute('aria-pressed', x === b)); cb(b.dataset[attr]); })); }
-  function showSetup() {
+  function showSetup() { Scene.setMode('full');
     stopSession();
     app.innerHTML = '';
     const s = h(`<section class="screen" id="setup"><div class="setup-card">
@@ -165,7 +196,7 @@
   }
 
   // ---------- 联机大厅 ----------
-  async function showOnline() {
+  async function showOnline() { Scene.setMode('full');
     stopSession();
     app.innerHTML = '';
     const s = h(`<section class="screen" id="setup"><div class="setup-card" id="oc">
@@ -455,7 +486,7 @@
   }
 
   // ---------- 抽身份 ----------
-  function showDraw() {
+  function showDraw() { Scene.setMode('full');
     const need = priv.ids.length;
     let k = 0;
     app.innerHTML = '';
@@ -501,6 +532,7 @@
 
   // ---------- 游戏主界面 ----------
   function startGameScreen() {
+    Scene.setMode('dim');
     inGame = true;
     app.innerHTML = '';
     const online = conn && conn.online;
@@ -920,7 +952,7 @@
   }
 
   // ---------- 结算 ----------
-  function showResult() {
+  function showResult() { Scene.setMode('full');
     if (resultShown) return;
     resultShown = true;
     const w = G.winner;
@@ -957,5 +989,6 @@
   }
 
   window.__mp = { get G() { return G; }, get priv() { return priv; }, setFast: v => (fast = v) };
+  Scene.mount();
   showTitle();
 })();
