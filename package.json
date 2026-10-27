@@ -1,0 +1,9 @@
+{
+  "name": "midnight-party",
+  "version": "1.0.0",
+  "description": "暗夜派对 · 联机隐藏身份推理游戏",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": { "ws": "^8.18.0" }
+}
