@@ -50,8 +50,8 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold-h
 /* 宾客流动：两排反向循环，边缘渐隐 */
 .cast-flow { display: grid; gap: 10px; margin: 6px -28px 24px; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent); mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent); }
 .cast-row { overflow: hidden; padding-block: 6px; }
-.cast-track { display: flex; gap: 14px; width: max-content; animation: flow 38s linear infinite; }
-.cast-row.rev .cast-track { animation-direction: reverse; animation-duration: 46s; }
+.cast-track { display: flex; gap: 14px; width: max-content; animation: flow 38s linear infinite reverse; }
+.cast-row.rev .cast-track { animation-direction: normal; animation-duration: 46s; }
 .cast-flow:hover .cast-track { animation-play-state: paused; }
 @keyframes flow { to { transform: translateX(calc(-50% - 7px)); } }
 .cast-flow .mini { display: grid; justify-items: center; gap: 3px; animation: bob 3s ease-in-out infinite; animation-delay: var(--d); }
