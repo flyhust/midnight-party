@@ -81,7 +81,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold-h
 .cast-flow.paused .cast-track { animation-play-state: paused; }
 .cast-flow .mini { cursor: pointer; outline: none; }
 .cast-flow.paused .mini:not(:hover):not(:focus) .mini-in { filter: brightness(.55) saturate(.6); }
-.cast-pop { position: fixed; z-index: 80; width: 260px; display: grid; grid-template-columns: 76px 1fr; gap: 12px; align-items: center; padding: 12px 14px; background: linear-gradient(170deg, #fbf3df, #e9dcbc); color: #2a1a12; border: 2px solid var(--gold); border-radius: 6px; box-shadow: 0 18px 40px rgba(0,0,0,.55), 0 0 0 4px rgba(217,181,106,.18); pointer-events: none; transform-origin: var(--ax, 50%) 100%; animation: cpIn .32s cubic-bezier(.2,.9,.3,1.2); }
+.cast-pop { position: fixed; z-index: 80; width: 290px; display: grid; grid-template-columns: 76px 1fr; gap: 12px; align-items: center; padding: 12px 14px; background: linear-gradient(170deg, #fbf3df, #e9dcbc); color: #2a1a12; border: 2px solid var(--gold); border-radius: 6px; box-shadow: 0 18px 40px rgba(0,0,0,.55), 0 0 0 4px rgba(217,181,106,.18); pointer-events: none; transform-origin: var(--ax, 50%) 100%; animation: cpIn .32s cubic-bezier(.2,.9,.3,1.2); }
 .cast-pop.below { transform-origin: var(--ax, 50%) 0; }
 .cast-pop::after { content: ""; position: absolute; left: calc(var(--ax, 50%) - 7px); bottom: -8px; width: 12px; height: 12px; background: #e9dcbc; border-right: 2px solid var(--gold); border-bottom: 2px solid var(--gold); transform: rotate(45deg); }
 .cast-pop.below::after { top: -8px; bottom: auto; transform: rotate(225deg); background: #fbf3df; }
@@ -93,7 +93,8 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold-h
 .cast-pop .eyebrow { color: #8a6a2a; font-size: 9.5px; letter-spacing: .2em; }
 .cast-pop .cp-nm { font-family: var(--f-title); font-weight: 900; font-size: 22px; letter-spacing: .2em; }
 .cast-pop .cp-bio { font-size: 13px; color: #4a3424; line-height: 1.45; }
-.cast-pop .cp-hint { font-size: 11px; color: #9a3a2a; margin-top: 2px; font-style: italic; }
+.cast-pop .cp-hint { font-size: 12px; color: #7a2a1e; margin-top: 4px; padding-top: 5px; border-top: 1px dashed #c9b083; line-height: 1.45; }
+.cast-pop .cp-hint b { color: #5a1626; font-weight: 700; }
 @keyframes flow { to { transform: translateX(calc(-50% - 7px)); } }
 .cast-flow .mini { display: grid; justify-items: center; gap: 3px; animation: bob 3s ease-in-out infinite; animation-delay: var(--d); }
 .cast-flow .mini-in { width: 54px; height: 54px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--gold); background: radial-gradient(circle at 50% 35%, #463559, #1b1326); box-shadow: 0 0 0 3px rgba(217,181,106,.08), 0 6px 14px rgba(0,0,0,.45); transition: transform .25s cubic-bezier(.3,1.6,.5,1), box-shadow .25s; }

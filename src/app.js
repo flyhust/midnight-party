@@ -128,6 +128,7 @@
     s.querySelector('#online').onclick = () => { unlock(); sfx('uiClick'); showOnline(); };
   }
 
+  const WHY = ["女伯爵请他来掌勺晚宴，菜单上有一道没人敢点的汤。", "女伯爵的私人医生，今晚他的药箱里少了一瓶药。", "受邀来唱压轴曲，她打算在今晚宣布一个秘密。", "来表演余兴节目，他的道具箱里刚好藏得下一个人。", "在这栋宅子里服务了三十年，今晚是他最后一班。", "来朗诵献给女伯爵的新诗，诗里藏着一个名字。", "来替孤儿院募捐，却在席上认出了一张旧面孔。", "自称来找灵感，其实是来核对他小说里的结局。", "本该在温室照看兰花，今晚却穿上了借来的礼服。", "混进来追查一桩旧丑闻，线人约他午夜见面。", "这是她的派对，也是她宣读遗嘱的夜晚。", "刚靠岸就收到请柬，他欠女伯爵一条船的人情。", "来为女伯爵画肖像，画布上却多出了一个人影。", "跟着乐队一起来，她要找出寄匿名信的人。", "今晚负责吧台，他知道谁在酒里加了东西。", "以老朋友的身份赴宴，口袋里有一封没拆的电报。", "被请来逗大家笑，可他自己一整晚都没笑过。", "来谈一笔生意，在场一半的人都在等他还钱。", "弹了一整晚的爵士，他只在等一首点歌。", "被雇来当保镖，却没人告诉他要保护谁。"];
   // 封面宾客档案：指着某人时两排都停下，翻出他的档案卡
   function wireCast(flow) {
     if (!flow) return;
@@ -137,7 +138,7 @@
       if (cur === el) return;
       hide(); cur = el; flow.classList.add('paused');
       const c = +el.dataset.c;
-      pop = h(`<div class="cast-pop" role="tooltip"><div class="cp-pic">${Art.portrait(c)}</div><div class="cp-txt"><div class="eyebrow">宾客档案 · No.${String(c + 1).padStart(2, '0')}</div><div class="cp-nm">${E.CHARS[c][0]}</div><div class="cp-bio">${E.CHARS[c][1]}</div><div class="cp-hint">也许今晚，你就是他。</div></div></div>`);
+      pop = h(`<div class="cast-pop" role="tooltip"><div class="cp-pic">${Art.portrait(c)}</div><div class="cp-txt"><div class="eyebrow">宾客档案 · No.${String(c + 1).padStart(2, '0')}</div><div class="cp-nm">${E.CHARS[c][0]}</div><div class="cp-bio">${E.CHARS[c][1]}</div><div class="cp-hint"><b>为何在场：</b>${WHY[c]}</div></div></div>`);
       document.body.append(pop);
       const r = el.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
       let x = r.left + r.width / 2 - pw / 2, y = r.top - ph - 12;
