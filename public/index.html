@@ -92,6 +92,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold-h
 .cast-pop .cp-txt { display: grid; gap: 2px; min-width: 0; text-align: left; }
 .cast-pop .eyebrow { color: #8a6a2a; font-size: 9.5px; letter-spacing: .2em; }
 .cast-pop .cp-nm { font-family: var(--f-title); font-weight: 900; font-size: 22px; letter-spacing: .2em; }
+.cast-pop .cp-nm span { font-size: 14px; letter-spacing: .04em; color: #6a5440; font-weight: 600; }
 .cast-pop .cp-bio { font-size: 13px; color: #4a3424; line-height: 1.45; }
 .cast-pop .cp-hint { font-size: 12px; color: #7a2a1e; margin-top: 4px; padding-top: 5px; border-top: 1px dashed #c9b083; line-height: 1.45; }
 .cast-pop .cp-hint b { color: #5a1626; font-weight: 700; }
@@ -135,6 +136,8 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold-h
 .idcard .pic { border-radius: 4px; background: radial-gradient(circle at 50% 40%, #fff6e0, #d9c69a); border: 1px solid #b89a5a; overflow: hidden; aspect-ratio: 1; }
 .idcard .nm { font-family: var(--f-title); font-weight: 900; font-size: 1.35em; letter-spacing: .2em; padding-left: .2em; margin-top: 4px; }
 .idcard .bio { font-size: .78em; color: #6a5440; }
+.idcard .alias { font-size: .8em; color: #8a6a2a; letter-spacing: .1em; margin-top: -2px; }
+.idcard .alias::before { content: "（"; } .idcard .alias::after { content: "）"; }
 .stamp { position: absolute; left: 50%; top: 66%; transform: translate(-50%, -50%) rotate(-14deg) scale(2.2); opacity: 0; padding: 4px 12px; border: 4px solid currentColor; font-family: var(--f-title); font-weight: 900; font-size: 26px; letter-spacing: .15em; background: rgba(255,255,255,.75); border-radius: 4px; white-space: nowrap; transition: transform .25s cubic-bezier(.3,1.6,.5,1), opacity .2s; }
 .stamp.show { opacity: 1; transform: translate(-50%, -50%) rotate(-14deg) scale(1); }
 .stamp.npc { color: #6b6b6b; } .stamp.player { color: #c0182e; } .stamp.right { color: #118a47; } .stamp.wrong { color: #c0182e; }
@@ -367,26 +370,26 @@ const Engine = (() => {
   const FACES = ['red', 'blue', 'green', 'purple', 'yellow', 'black'];
   const CONFIG = { tokens: 1, midnightRound: 20, maxRound: 50, escape: true };
   const CHARS = [
-    ['厨师', '据说他的汤能让人说真话。'],
-    ['医生', '总在观察别人的脸色。'],
-    ['歌手', '今晚的主角，至少她这么认为。'],
-    ['魔术师', '最擅长让东西消失。'],
-    ['管家', '知道这栋房子的每一条暗道。'],
-    ['诗人', '把每个人都写进了诗里。'],
-    ['修女', '为所有人祈祷，包括凶手。'],
-    ['作家', '正在写一本谋杀小说。'],
-    ['园丁', '花园里的每一株毒草他都认识。'],
-    ['记者', '在找今晚的头条。'],
-    ['女伯爵', '这场派对的主人。'],
-    ['船长', '见过比这更大的风浪。'],
-    ['画家', '画的肖像总是少一个人。'],
-    ['舞者', '一刻也停不下来。'],
-    ['调酒师', '记得每个人点了什么。'],
-    ['将军', '退役了，习惯没退。'],
-    ['小丑', '笑得最大声的那个。'],
-    ['富商', '欠了在场一半人的钱。'],
-    ['钢琴师', '音乐一停，就有人倒下。'],
-    ['拳击手', '鼻子断过三次。'],
+    ['厨师', '据说他的汤能让人说真话。', '潘福生'],
+    ['医生', '总在观察别人的脸色。', '沈济仁'],
+    ['歌手', '今晚的主角，至少她这么认为。', '白玫瑰'],
+    ['魔术师', '最擅长让东西消失。', '杜兰'],
+    ['管家', '知道这栋房子的每一条暗道。', '福伯'],
+    ['诗人', '把每个人都写进了诗里。', '林慕远'],
+    ['修女', '为所有人祈祷，包括凶手。', '玛丽亚嬷嬷'],
+    ['作家', '正在写一本谋杀小说。', '顾墨言'],
+    ['园丁', '花园里的每一株毒草他都认识。', '阿青'],
+    ['记者', '在找今晚的头条。', '陆一鸣'],
+    ['女伯爵', '这场派对的主人。', '薇拉'],
+    ['船长', '见过比这更大的风浪。', '霍克'],
+    ['画家', '画的肖像总是少一个人。', '苏念白'],
+    ['舞者', '一刻也停不下来。', '莉莉'],
+    ['调酒师', '记得每个人点了什么。', '金三'],
+    ['将军', '退役了，习惯没退。', '秦镇岳'],
+    ['小丑', '笑得最大声的那个。', '乐乐'],
+    ['富商', '欠了在场一半人的钱。', '钱万贯'],
+    ['钢琴师', '音乐一停，就有人倒下。', '何清韵'],
+    ['拳击手', '鼻子断过三次。', '铁牛'],
   ];
   const AI_NAMES = ['狐狸', '乌鸦', '黑猫', '毒蛇', '猫头鹰', '蝙蝠', '孤狼', '蜘蛛'];
   const P_COLORS = ['#f2c96d', '#ff8a5c', '#5fd3c4', '#f06bb0', '#b9e35a', '#8ab4ff', '#c49bff', '#e8e2f2'];
@@ -1594,7 +1597,7 @@ const Net = (() => {
       const f = ov.querySelector('.btn.primary, .btn'); f && f.focus();
     });
   }
-  const idFront = (c, stamp = '', kind = '') => `<div class="face front idcard"><div class="pic">${Art.portrait(c)}</div><div class="nm">${E.CHARS[c][0]}</div><div class="bio">${E.CHARS[c][1]}</div>${stamp ? `<div class="stamp ${kind}">${stamp}</div>` : ''}</div>`;
+  const idFront = (c, stamp = '', kind = '') => `<div class="face front idcard"><div class="pic">${Art.portrait(c)}</div><div class="nm">${E.CHARS[c][0]}</div><div class="alias">${E.CHARS[c][2]}</div><div class="bio">${E.CHARS[c][1]}</div>${stamp ? `<div class="stamp ${kind}">${stamp}</div>` : ''}</div>`;
   const flipCard = (c, stamp, kind) => `<div class="flip"><div class="inner"><div class="face back">${Art.cardBack()}</div>${idFront(c, stamp, kind)}</div></div>`;
   function reveal({ cid, stamp, kind, caption, auto = 0, sound, spotlight = false, delay = 350 }) {
     return new Promise(res => {
@@ -1644,7 +1647,7 @@ const Net = (() => {
       if (cur === el) return;
       hide(); cur = el; flow.classList.add('paused');
       const c = +el.dataset.c;
-      pop = h(`<div class="cast-pop" role="tooltip"><div class="cp-pic">${Art.portrait(c)}</div><div class="cp-txt"><div class="eyebrow">宾客档案 · No.${String(c + 1).padStart(2, '0')}</div><div class="cp-nm">${E.CHARS[c][0]}</div><div class="cp-bio">${E.CHARS[c][1]}</div><div class="cp-hint"><b>为何在场：</b>${WHY[c]}</div></div></div>`);
+      pop = h(`<div class="cast-pop" role="tooltip"><div class="cp-pic">${Art.portrait(c)}</div><div class="cp-txt"><div class="eyebrow">宾客档案 · No.${String(c + 1).padStart(2, '0')}</div><div class="cp-nm">${E.CHARS[c][0]}<span>（${E.CHARS[c][2]}）</span></div><div class="cp-bio">${E.CHARS[c][1]}</div><div class="cp-hint">${WHY[c]}</div></div></div>`);
       document.body.append(pop);
       const r = el.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
       let x = r.left + r.width / 2 - pw / 2, y = r.top - ph - 12;
@@ -2012,7 +2015,7 @@ const Net = (() => {
       if (k >= need) return;
       sfx('selectPick'); b.classList.add('taken');
       const c = priv.ids[k++];
-      await reveal({ cid: c, stamp: '你', kind: 'player', sound: 'revealPlayer', caption: `今晚你是 <b>${E.CHARS[c][0]}</b>。${E.CHARS[c][1]}<br><span class="hint">它在棋盘上会有一圈金边，只有你看得到。</span>` });
+      await reveal({ cid: c, stamp: '你', kind: 'player', sound: 'revealPlayer', caption: `今晚你是 <b>${E.CHARS[c][0]}（${E.CHARS[c][2]}）</b>。${E.CHARS[c][1]}<br><span class="hint">它在棋盘上会有一圈金边，只有你看得到。</span>` });
       if (k >= need) {
         s.querySelectorAll('.dcard').forEach(x => (x.disabled = true));
         const go = h('<button class="btn primary" style="padding:14px 30px;font-size:16px">走进派对大厅</button>');
@@ -2223,7 +2226,7 @@ const Net = (() => {
     modal({
       title: '', dismiss: 'x', buttons: [{ label: '关闭', value: 'x', kind: 'ghost' }], mount: (m, close) => {
         const box = h(`<div class="detail"><div class="flip" style="width:150px;height:210px"><div class="inner"><div class="face back">${Art.cardBack()}</div>${idFront(c, ch.alive ? '' : '已死', 'player')}</div></div>
-          <div style="display:grid;gap:8px;min-width:0"><div class="eyebrow">宾客档案</div><div class="h-title" style="font-size:22px;color:var(--gold-hi)">${ch.name}</div><div>位置：${zn(ch.zone)}</div><div>${info}</div>
+          <div style="display:grid;gap:8px;min-width:0"><div class="eyebrow">宾客档案</div><div class="h-title" style="font-size:22px;color:var(--gold-hi)">${ch.name}<span style="font-size:15px;letter-spacing:.05em;color:var(--mute)">（${E.CHARS[c][2]}）</span></div><div>位置：${zn(ch.zone)}</div><div>${info}</div>
           ${!mine(c) && ch.alive ? `<div class="hint">贴上嫌疑标签：</div><div class="chips" id="tagrow">${G.players.filter(q => q.id !== ME && !q.out).map(q => `<button class="chip" data-q="${q.id}" aria-pressed="${tags[c] === q.id}" style="border-color:${q.color}"><i class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${q.color}"></i> ${esc(q.name)}</button>`).join('')}<button class="chip" data-q="-1">清除</button></div>` : ''}</div></div>`);
         m.querySelector('.body').append(box);
         setTimeout(() => { box.querySelector('.flip').classList.add('flipped'); sfx('cardFlip'); if (!ch.alive) box.querySelector('.stamp').classList.add('show'); }, 200);

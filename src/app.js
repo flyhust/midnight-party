@@ -88,7 +88,7 @@
       const f = ov.querySelector('.btn.primary, .btn'); f && f.focus();
     });
   }
-  const idFront = (c, stamp = '', kind = '') => `<div class="face front idcard"><div class="pic">${Art.portrait(c)}</div><div class="nm">${E.CHARS[c][0]}</div><div class="bio">${E.CHARS[c][1]}</div>${stamp ? `<div class="stamp ${kind}">${stamp}</div>` : ''}</div>`;
+  const idFront = (c, stamp = '', kind = '') => `<div class="face front idcard"><div class="pic">${Art.portrait(c)}</div><div class="nm">${E.CHARS[c][0]}</div><div class="alias">${E.CHARS[c][2]}</div><div class="bio">${E.CHARS[c][1]}</div>${stamp ? `<div class="stamp ${kind}">${stamp}</div>` : ''}</div>`;
   const flipCard = (c, stamp, kind) => `<div class="flip"><div class="inner"><div class="face back">${Art.cardBack()}</div>${idFront(c, stamp, kind)}</div></div>`;
   function reveal({ cid, stamp, kind, caption, auto = 0, sound, spotlight = false, delay = 350 }) {
     return new Promise(res => {
@@ -138,7 +138,7 @@
       if (cur === el) return;
       hide(); cur = el; flow.classList.add('paused');
       const c = +el.dataset.c;
-      pop = h(`<div class="cast-pop" role="tooltip"><div class="cp-pic">${Art.portrait(c)}</div><div class="cp-txt"><div class="eyebrow">宾客档案 · No.${String(c + 1).padStart(2, '0')}</div><div class="cp-nm">${E.CHARS[c][0]}</div><div class="cp-bio">${E.CHARS[c][1]}</div><div class="cp-hint"><b>为何在场：</b>${WHY[c]}</div></div></div>`);
+      pop = h(`<div class="cast-pop" role="tooltip"><div class="cp-pic">${Art.portrait(c)}</div><div class="cp-txt"><div class="eyebrow">宾客档案 · No.${String(c + 1).padStart(2, '0')}</div><div class="cp-nm">${E.CHARS[c][0]}<span>（${E.CHARS[c][2]}）</span></div><div class="cp-bio">${E.CHARS[c][1]}</div><div class="cp-hint">${WHY[c]}</div></div></div>`);
       document.body.append(pop);
       const r = el.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
       let x = r.left + r.width / 2 - pw / 2, y = r.top - ph - 12;
@@ -506,7 +506,7 @@
       if (k >= need) return;
       sfx('selectPick'); b.classList.add('taken');
       const c = priv.ids[k++];
-      await reveal({ cid: c, stamp: '你', kind: 'player', sound: 'revealPlayer', caption: `今晚你是 <b>${E.CHARS[c][0]}</b>。${E.CHARS[c][1]}<br><span class="hint">它在棋盘上会有一圈金边，只有你看得到。</span>` });
+      await reveal({ cid: c, stamp: '你', kind: 'player', sound: 'revealPlayer', caption: `今晚你是 <b>${E.CHARS[c][0]}（${E.CHARS[c][2]}）</b>。${E.CHARS[c][1]}<br><span class="hint">它在棋盘上会有一圈金边，只有你看得到。</span>` });
       if (k >= need) {
         s.querySelectorAll('.dcard').forEach(x => (x.disabled = true));
         const go = h('<button class="btn primary" style="padding:14px 30px;font-size:16px">走进派对大厅</button>');
@@ -717,7 +717,7 @@
     modal({
       title: '', dismiss: 'x', buttons: [{ label: '关闭', value: 'x', kind: 'ghost' }], mount: (m, close) => {
         const box = h(`<div class="detail"><div class="flip" style="width:150px;height:210px"><div class="inner"><div class="face back">${Art.cardBack()}</div>${idFront(c, ch.alive ? '' : '已死', 'player')}</div></div>
-          <div style="display:grid;gap:8px;min-width:0"><div class="eyebrow">宾客档案</div><div class="h-title" style="font-size:22px;color:var(--gold-hi)">${ch.name}</div><div>位置：${zn(ch.zone)}</div><div>${info}</div>
+          <div style="display:grid;gap:8px;min-width:0"><div class="eyebrow">宾客档案</div><div class="h-title" style="font-size:22px;color:var(--gold-hi)">${ch.name}<span style="font-size:15px;letter-spacing:.05em;color:var(--mute)">（${E.CHARS[c][2]}）</span></div><div>位置：${zn(ch.zone)}</div><div>${info}</div>
           ${!mine(c) && ch.alive ? `<div class="hint">贴上嫌疑标签：</div><div class="chips" id="tagrow">${G.players.filter(q => q.id !== ME && !q.out).map(q => `<button class="chip" data-q="${q.id}" aria-pressed="${tags[c] === q.id}" style="border-color:${q.color}"><i class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${q.color}"></i> ${esc(q.name)}</button>`).join('')}<button class="chip" data-q="-1">清除</button></div>` : ''}</div></div>`);
         m.querySelector('.body').append(box);
         setTimeout(() => { box.querySelector('.flip').classList.add('flipped'); sfx('cardFlip'); if (!ch.alive) box.querySelector('.stamp').classList.add('show'); }, 200);
