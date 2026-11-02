@@ -25,6 +25,10 @@
     '<svg viewBox="0 0 60 60" class="glyph"><rect x="2" y="6" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><rect x="33" y="6" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><rect x="2" y="30" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><rect x="33" y="30" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><path d="M20 56H40" stroke="#fff" stroke-width="3"/></svg>',
   ];
 
+  // 支持作者（Buy Me a Coffee）：填上链接就会出现在右上角；留空则不显示
+  const SUPPORT_URL = '';
+  const supportBtn = cls => SUPPORT_URL ? `<a class="iconbtn support ${cls || ''}" href="${SUPPORT_URL}" target="_blank" rel="noopener" title="喜欢这个游戏？请作者喝杯咖啡">☕ 支持作者</a>` : '';
+
   // G = 本机看到的局面（公开信息 + 自己的身份），priv = 自己的私密信息
   let G = null, ME = 0, priv = null, conn = null, session = 0;
   let fast = false, catchup = false, tags = {}, tokEls = {}, ui = {}, selecting = null;
@@ -112,7 +116,7 @@
   function showTitle() { Scene.setMode('full');
     stopSession();
     app.innerHTML = '';
-    const s = h(`<section class="screen" id="title"><div class="marquee">
+    const s = h(`<section class="screen" id="title">${supportBtn('support-title')}<div class="marquee">
       <div class="eyebrow">一九二七 · 某个下雨的夜晚</div>
       <div class="neon" style="margin-top:14px">Midnight Party</div>
       <div class="title-cn">暗夜派对</div>
@@ -543,24 +547,37 @@
     const s = h(`<section class="screen" id="game">
       <div class="topbar"><div class="brand">Midnight Party</div>${online ? `<span class="clock" title="联机房号">房号 ${esc(conn.code || '')}</span>` : ''}
         <div class="clock" id="clock"></div>
-        <button class="iconbtn" id="b-log">日志</button><button class="iconbtn" id="b-rules">规则</button>
+        <div class="turnpill" id="turn" aria-live="polite"></div>
+        ${SUPPORT_URL ? `<a class="iconbtn support support-mini" href="${SUPPORT_URL}" target="_blank" rel="noopener" aria-label="支持作者">☕</a>` : ''}<button class="iconbtn" id="b-hand" aria-label="看我的身份">身份</button>
+        <button class="iconbtn" id="b-menu" aria-label="菜单" aria-expanded="false">☰</button>
+        <div class="tools" id="tools"><button class="iconbtn" id="b-log">日志</button><button class="iconbtn" id="b-rules">规则</button>
         <button class="iconbtn" id="b-snd" aria-pressed="${SFX.on}">音效 ${SFX.on ? '开' : '关'}</button><button class="iconbtn" id="b-mus" aria-pressed="${Music.on}">音乐 ${Music.on ? '开' : '关'}</button>
         <button class="iconbtn" id="b-fast" aria-pressed="false">快进</button>
-        <button class="iconbtn" id="b-exit">退出</button></div>
+        <button class="iconbtn" id="b-exit">退出</button>${supportBtn()}</div></div>
       <aside class="left"><div class="panel"><h3>宾客名单 <span class="hint" style="letter-spacing:0">玩家</span></h3><div class="plist" id="plist"></div></div></aside>
-      <main class="board-wrap"><div id="prompt"></div><div class="board" id="board">${Z.map((z, i) => `<div class="zone z${i}" data-z="${i}">${GLYPH[i]}<div class="zh"><i class="sw"></i><b>${z.c}·${z.n}</b><span>${i === 4 ? '可监控' : '房间'}</span><span class="cnt"></span></div><div class="toks"></div></div>`).join('')}</div>
-        <div class="actionbar" id="actions"></div></main>
-      <aside class="right"><div class="panel"><h3>我的身份 <span class="hint" style="letter-spacing:0">悬停查看</span></h3><div class="idhand" id="hand"></div></div>
-        <div class="panel"><h3>推理笔记</h3><div class="hint" style="margin-bottom:4px">根据公开信息推算每个对手可能是谁</div><div id="notes"></div></div></aside>
+      <main class="board-wrap"><div class="stage" id="stage"><div id="prompt"></div><div class="board" id="board">${House.svg()}${Z.map((z, i) => `<div class="rlabel" data-z="${i}" style="--zc:${ZC[i]}"><i></i><b>${z.c}·${z.n}</b><span class="cnt"></span></div>`).join('')}</div></div>
+</main>
+      <div class="actionbar" id="actions"></div>
+      <aside class="right"><div class="panel hand-panel"><h3>我的身份 <span class="hint" style="letter-spacing:0">悬停查看</span></h3><div class="idhand" id="hand"></div></div>
+        <div class="panel"><h3>推理笔记 <button class="chip nb-glow" id="b-glow" aria-pressed="${settings.glow !== false}">嫌疑光 ${settings.glow !== false ? '开' : '关'}</button></h3><div class="hint sub" style="margin-bottom:4px">根据公开信息推算每个对手可能是谁。棋盘上发光的人就是嫌疑人，越亮越可疑；点对手名字只看他的嫌疑人。</div><div id="notes"></div></div></aside>
     </section>`);
     app.append(s);
-    ui.board = s.querySelector('#board');
+    ui.board = s.querySelector('#board'); ui.stage = s.querySelector('#stage'); ui.focus = -1;
+    s.style.setProperty('--bar', House.ratio.toFixed(3));
     tokEls = {};
     G.chars.forEach(c => {
-      const b = h(`<button class="tok" data-c="${c.id}" aria-label="${c.name}"><div class="ring">${Art.portrait(c.id)}</div><div class="lb">${c.name}</div></button>`);
+      const b = h(`<button class="tok" data-c="${c.id}" aria-label="${c.name}"><div class="body"><div class="ring">${Art.portrait(c.id)}</div><div class="lb">${c.name}</div></div></button>`);
       b.onclick = () => onTokenClick(c.id);
-      tokEls[c.id] = b;
+      tokEls[c.id] = b; ui.board.append(b);
     });
+    ui.board.querySelectorAll('.house .zone').forEach(g => g.addEventListener('click', () => ui.pickZ && ui.pickZ(+g.dataset.z)));
+    const tools = s.querySelector('#tools'), menu = s.querySelector('#b-menu');
+    const closeMenu = () => { tools.classList.remove('open'); menu.setAttribute('aria-expanded', 'false'); };
+    menu.onclick = e => { e.stopPropagation(); sfx('uiClick'); const o = tools.classList.toggle('open'); menu.setAttribute('aria-expanded', o); };
+    document.addEventListener('pointerdown', e => { if (!tools.contains(e.target) && e.target !== menu) closeMenu(); });
+    tools.addEventListener('click', e => { if (e.target.closest('button')) setTimeout(closeMenu, 120); });
+    s.querySelector('#b-hand').onclick = () => { sfx('uiClick'); showHand(); };
+    s.querySelector('#b-glow').onclick = e => { settings.glow = settings.glow === false; saveSettings(); e.currentTarget.setAttribute('aria-pressed', settings.glow); e.currentTarget.textContent = `嫌疑光 ${settings.glow ? '开' : '关'}`; sfx('uiClick'); render(); };
     s.querySelector('#b-log').onclick = () => { sfx('uiClick'); showLog(); };
     s.querySelector('#b-rules').onclick = () => { sfx('uiClick'); showRules(); };
     s.querySelector('#b-snd').onclick = e => { const on = SFX.toggle(); e.currentTarget.textContent = `音效 ${on ? '开' : '关'}`; e.currentTarget.setAttribute('aria-pressed', on); sfx('uiClick'); };
@@ -572,18 +589,49 @@
       const v = await modal({ title: '离开派对？', body: hostOnline ? '你是房主。你一离开，这局就会中断，朋友们也玩不下去了。' : '退出会结束你这一局。', dismiss: 'no', buttons: [{ label: '留下', value: 'no', kind: 'ghost' }, { label: '退出', value: 'yes', kind: 'danger' }] });
       if (v === 'yes') showTitle();
     };
+    if (window.ResizeObserver) { const ro = new ResizeObserver(() => { if (!ui.stage.isConnected) return ro.disconnect(); layoutBoard(); placeTokens(); }); ro.observe(ui.stage); }
     Music.setMode(isMid() ? 'midnight' : 'party'); Music.start();
-    placeTokens(); render(); setActions('wait');
+    layoutBoard(); placeTokens(); render(); setActions('wait');
     pump();
   }
+  // 手机上看身份：弹出两张卡，按住翻开
+  function showHand() {
+    const ids = priv ? priv.ids : [];
+    modal({ title: '我的身份', dismiss: 'x', buttons: [{ label: '收起', value: 'x', kind: 'ghost' }], mount: m => {
+      const row = h(`<div class="idhand" style="justify-content:center">${ids.map(c => `<div class="flip ${G.chars[c].alive ? '' : 'flipped'}" style="width:120px;height:168px">${''}<div class="inner"><div class="face back">${Art.cardBack()}</div>${idFront(c, G.chars[c].alive ? '' : '已死', 'player')}</div></div>`).join('')}</div>`);
+      m.querySelector('.body').append(row, h('<div class="hint" style="text-align:center;margin-top:10px">点卡片翻开 · 小心别被旁边的人看到</div>'));
+      row.querySelectorAll('.flip').forEach((f, i) => { if (!G.chars[ids[i]].alive) { f.querySelector('.stamp').classList.add('show'); return; } f.onclick = () => { f.classList.toggle('flipped'); sfx('cardFlip'); }; });
+    } });
+  }
 
+  // ---------- 棋盘排版：房子按可用空间缩放，宾客站在各自房间的地板上 ----------
+  function layoutBoard() {
+    if (!ui.stage || !ui.stage.isConnected) return;
+    const r = ui.stage.getBoundingClientRect(), pad = 6;
+    const f = House.fit(Math.max(50, r.width - pad * 2), Math.max(50, r.height - pad * 2));
+    ui.u = f.u;
+    Object.assign(ui.board.style, { width: f.w + 'px', height: f.h + 'px', left: (r.width - f.w) / 2 + 'px', top: (r.height - f.h) / 2 + 'px' });
+    ui.board.style.setProperty('--lf', Math.max(10, Math.min(14, f.u * .62)) + 'px');
+    ui.board.querySelectorAll('.rlabel').forEach(el => { const [x, y] = House.px(f.u, ...House.labelAt(+el.dataset.z)); el.style.left = x + 'px'; el.style.top = y + 'px'; });
+  }
   function placeTokens() {
-    if (!ui.board || !ui.board.isConnected) return;
-    const boxes = ui.board.querySelectorAll('.toks');
+    if (!ui.board || !ui.board.isConnected || !ui.u) return;
+    const u = ui.u;
     const byZone = [[], [], [], [], []];
     [...G.chars].sort((a, b) => (b.alive - a.alive) || a.id - b.id).forEach(c => byZone[c.zone].push(c.id));
-    byZone.forEach((ids, z) => ids.forEach(id => boxes[z].append(tokEls[id])));
-    ui.board.querySelectorAll('.zone').forEach((el, z) => (el.querySelector('.cnt').textContent = `${G.chars.filter(c => c.alive && c.zone === z).length} 人`));
+    byZone.forEach((ids, z) => {
+      if (!ids.length) return;
+      const { pos, d } = House.slots(z, ids.length);
+      const tk = Math.round(Math.max(22, Math.min(64, u * 2.3, d * u * 1.12)));
+      const lbf = Math.max(9, Math.min(13, tk * .3));
+      ids.forEach((id, i) => {
+        const el = tokEls[id], [x, y] = House.px(u, pos[i][0], pos[i][1]);
+        el.style.setProperty('--tk', tk + 'px'); el.style.setProperty('--lbf', lbf + 'px');
+        el.style.left = (x - tk / 2) + 'px'; el.style.top = (y - tk + 3) + 'px';
+        el.style.zIndex = 10 + Math.round((pos[i][0] + pos[i][1]) * 4) + (G.chars[id].alive ? 0 : -1);
+      });
+    });
+    ui.board.querySelectorAll('.rlabel').forEach(el => { const z = +el.dataset.z; el.querySelector('.cnt').textContent = `${G.chars.filter(c => c.alive && c.zone === z).length} 人`; });
   }
   function flipPlace(focus) {
     const first = {};
@@ -601,31 +649,66 @@
     }
   }
   const noteFor = q => (priv && priv.notes || []).find(n => n.q === q);
+  // 推理笔记 → 每个角色的嫌疑光：取最可能的那位对手的颜色，亮度按百分比
+  function suspicion() {
+    const out = {};
+    if (!priv || settings.glow === false) return out;
+    for (const n of priv.notes || []) {
+      const q = G.players[n.q]; if (!q || q.out || (ui.focus >= 0 && ui.focus !== n.q)) continue;
+      const top = (n.sus[0] || [0, 0])[1];
+      if (n.total > 9 && top < 15) continue;   // 线索不足：不乱发光
+      for (const [c, pct] of n.sus) { if (pct < 12) continue; if (!out[c] || out[c].pct < pct) out[c] = { q: n.q, pct, color: q.color }; }
+    }
+    return out;
+  }
   function render() {
     if (!G || !document.getElementById('plist')) return;
     const ck = document.getElementById('clock');
     const mid = isMid();
     ck.className = 'clock' + (mid ? ' mid' : '');
     ck.innerHTML = `<b>第 ${G.round} 轮</b><span class="hint">${mid ? `午夜 · 黄色也杀人 · 第 ${dawnR()} 轮天亮` : `距午夜还有 ${midR() - G.round} 轮`}</span>`;
+    // 轮到谁：顶栏标签 + 名单高亮 + 棋盘描边，三处一起提示
+    const cur = G.players[G.cur], myTurn = G.cur === ME && !G.over;
+    const tp = document.getElementById('turn');
+    if (tp && cur) {
+      const pd = G.pending && G.pending.seat === G.cur ? PHASE_TXT[G.pending.phase] : '';
+      tp.className = 'turnpill' + (myTurn ? ' me' : '');
+      tp.style.setProperty('--pc', myTurn ? 'var(--gold)' : cur.color);
+      tp.innerHTML = G.over ? '<b>派对结束</b>' : `<i class="dot"></i><b>${myTurn ? '轮到你了' : `轮到 ${esc(cur.name)}`}</b><span class="ph">${myTurn ? '' : pd}</span>`;
+    }
+    if (ui.stage) ui.stage.style.setProperty('--pc', G.over ? 'transparent' : myTurn ? 'var(--gold)' : cur ? cur.color : 'transparent');
     document.getElementById('plist').innerHTML = G.players.map(p => {
       const sub = p.out ? '出局 · 幽灵' : G.per === 2 ? `身份 ${p.n - p.dead.length}/${p.n}` : p.id === ME ? '你' : p.ai ? 'AI · 身份未知' : '身份未知';
-      return `<div class="pl ${G.cur === p.id && !G.over ? 'cur' : ''} ${p.out ? 'out' : ''}"><i class="dot" style="background:${p.color}"></i><div><div class="nm">${nm(p.id)}${p.ai && conn && conn.online ? ' <span class="hint">AI</span>' : ''}</div><div class="sub">${sub}</div></div><div class="coins" title="揭穿代币">${Array.from({ length: tokenMax() }, (_, i) => `<i class="coin ${i < p.tokens ? '' : 'used'}"></i>`).join('')}</div></div>`;
+      return `<button class="pl ${G.cur === p.id && !G.over ? 'cur' : ''} ${p.out ? 'out' : ''} ${ui.focus === p.id ? 'focus' : ''}" data-q="${p.id}" style="--pc:${p.id === ME ? 'var(--gold)' : p.color}"><span class="turn">${p.id === ME ? '你的回合' : '回合中'}</span><i class="dot" style="background:${p.color}"></i><div><div class="nm">${nm(p.id)}${p.ai && conn && conn.online ? ' <span class="hint">AI</span>' : ''}</div><div class="sub">${sub}</div></div><div class="coins" title="揭穿代币">${Array.from({ length: tokenMax() }, (_, i) => `<i class="coin ${i < p.tokens ? '' : 'used'}"></i>`).join('')}</div></button>`;
     }).join('');
+    document.querySelectorAll('#plist .pl').forEach(b => (b.onclick = () => { const q = +b.dataset.q; if (q === ME) { sfx('uiClick'); return showHand(); } focusOpp(q); }));
+    const sus = suspicion();
+    if (ui.board) ui.board.classList.toggle('focusing', ui.focus >= 0 && settings.glow !== false);
+    const myZones = new Set(G.chars.filter(c => c.alive && mine(c.id)).map(c => c.zone));
+    if (ui.board) {
+      ui.board.querySelectorAll('.house .zone').forEach(g => g.classList.toggle('mine', myZones.has(+g.dataset.z)));
+      ui.board.querySelectorAll('.rlabel').forEach(el => el.classList.toggle('here', myZones.has(+el.dataset.z)));
+    }
     for (const c of G.chars) {
       const el = tokEls[c.id];
       if (!el) continue;
+      const body = el.querySelector('.body');
       el.classList.toggle('dead', !c.alive);
       el.classList.toggle('mine', mine(c.id));
-      el.querySelectorAll('.you,.tag,.know').forEach(x => x.remove());
-      if (mine(c.id)) el.prepend(h('<span class="you">你</span>'));
-      if (tags[c.id] !== undefined && c.alive) el.append(h(`<span class="tag" style="background:${G.players[tags[c.id]].color}" title="你的标记"></span>`));
+      el.classList.toggle('turnme', myTurn && mine(c.id) && c.alive);
+      body.querySelectorAll('.you,.tag,.know,.pct').forEach(x => x.remove());
+      if (mine(c.id)) body.prepend(h('<span class="you">你</span>'));
+      if (tags[c.id] !== undefined && c.alive) body.append(h(`<span class="tag" style="background:${G.players[tags[c.id]].color}" title="你的标记"></span>`));
       const k = priv && priv.know ? priv.know[c.id] : null;
       if (c.alive && !mine(c.id)) {
-        if (k === -1) el.append(h('<span class="know npc">NPC</span>'));
-        else if (k === -2) el.append(h('<span class="know pl">玩家</span>'));
-        else if (k !== null && k >= 0) el.append(h(`<span class="know pl" style="background:${G.players[k].color};color:#111">${nm(k)}</span>`));
+        if (k === -1) body.append(h('<span class="know npc">NPC</span>'));
+        else if (k === -2) body.append(h('<span class="know pl">玩家</span>'));
+        else if (k !== null && k >= 0) body.append(h(`<span class="know pl" style="background:${G.players[k].color};color:#111">${nm(k)}</span>`));
       }
-      el.setAttribute('aria-label', `${c.name}${c.alive ? '' : '（已死亡）'}`);
+      const sv = c.alive && !mine(c.id) && k !== -1 ? sus[c.id] : null;
+      el.classList.toggle('sus', !!sv); el.classList.toggle('hot', !!sv && sv.pct >= 40); el.classList.toggle('sure', !!sv && sv.pct >= 100);
+      if (sv) { el.style.setProperty('--sc', sv.color); el.style.setProperty('--sp', Math.min(1, .25 + sv.pct / 80).toFixed(2)); if (sv.pct >= 20) body.append(h(`<span class="pct" title="推理笔记：可能是 ${esc(G.players[sv.q].name)}">${sv.pct >= 100 ? '确定' : sv.pct + '%'}</span>`)); }
+      el.setAttribute('aria-label', `${c.name}${c.alive ? '' : '（已死亡）'}${sv ? `，可能是 ${G.players[sv.q].name}（${sv.pct}%）` : ''}`);
     }
     const hand = document.getElementById('hand');
     const ids = priv ? priv.ids : [];
@@ -648,13 +731,21 @@
         const left = q.n - dead.length;
         inner = (dead.length ? `<div class="hint">已死身份：${dead.map(c => G.chars[c].name).join('、')}</div>` : '') +
           (sure.length ? `<div style="color:var(--danger);font-weight:700">确定是：${sure.map(([c]) => G.chars[c].name).join('、')}</div>` : '') +
-          (sure.length >= left ? '' : n.total > 9 && (n.sus[0] || [0, 0])[1] < 15 ? `<div class="hint">线索不足：可能是 ${n.total} 人中的任何一位。等他杀人、监控或揭穿时就会露出马脚。</div>` :
+          (sure.length >= left ? '' : n.total > 9 && (n.sus[0] || [0, 0])[1] < 15 ? `<div class="hint">线索不足：${n.total} 人都有可能</div>` :
             `<div class="nb-sus">${n.sus.slice(0, 6).map(([c, pct]) => `<span class="sus ${pct > 40 ? 'hot' : ''}" data-c="${c}"><span class="mini">${Art.portrait(c)}</span>${G.chars[c].name}<i>${pct}%</i></span>`).join('')}${n.total > 6 ? `<span class="hint">等 ${n.total} 人</span>` : ''}</div>`);
       }
-      return `<div class="nb-row"><div class="nb-head"><i class="dot" style="width:10px;height:10px;border-radius:50%;background:${q.color}"></i>${esc(q.name)}${q.out ? ' <span class="hint">（幽灵）</span>' : ''}</div>${inner}</div>`;
+      return `<div class="nb-row"><button class="nb-head" data-q="${q.id}" aria-pressed="${ui.focus === q.id}" title="只看他的嫌疑人"><i class="dot" style="background:${q.color}"></i>${esc(q.name)}${q.out ? ' <span class="hint">（幽灵）</span>' : ''}</button>${inner}</div>`;
     }).join('');
     notes.querySelectorAll('.sus').forEach(s => (s.onclick = () => { sfx('uiClick'); charDetail(+s.dataset.c); }));
+    notes.querySelectorAll('.nb-head').forEach(b => (b.onclick = () => focusOpp(+b.dataset.q)));
     if (!ui.prompting) setActions(G.players[ME].out && !G.over ? 'spectate' : 'wait');
+  }
+  // 点某个对手：棋盘上只亮他的嫌疑人，再点一次恢复
+  function focusOpp(q) {
+    sfx('uiClick');
+    ui.focus = ui.focus === q ? -1 : q;
+    if (settings.glow === false && ui.focus >= 0) { settings.glow = true; const b = document.getElementById('b-glow'); if (b) { b.setAttribute('aria-pressed', 'true'); b.textContent = '嫌疑光 开'; } }
+    render();
   }
 
   // ---------- 行动栏 ----------
@@ -662,10 +753,11 @@
     const bar = document.getElementById('actions');
     if (!bar || !G) return;
     const p = G.players[G.cur];
+    bar.classList.toggle('mine', mode === 'human' || (mode === 'busy' && G.cur === ME));
     if (mode === 'human') {
       const tgt = E.accuseTargets(G, ME);
       const why = G.players[ME].tokens <= 0 ? '揭穿代币已经用完' : !tgt.length ? '你的房间里没有别人可以指认' : '指认同房间的某人是某位玩家';
-      bar.innerHTML = `<div class="status"><b>你的回合</b><span class="why">掷骰子，或者花 1 枚代币揭穿一个人</span></div>
+      bar.innerHTML = `<div class="status"><b>你的回合</b><span class="why">掷骰子，或者花代币揭穿同房间的人</span></div>
         <button class="btn primary big" id="a-roll">${ICON_DIE} 掷骰子</button>
         <button class="btn big" id="a-acc" ${tgt.length ? '' : 'aria-disabled="true"'} style="${tgt.length ? '' : 'opacity:.4'}" title="${why}">揭穿 <span class="coins">${Array.from({ length: tokenMax() }, (_, i) => `<i class="coin ${i < G.players[ME].tokens ? '' : 'used'}"></i>`).join('')}</span></button>
         <div class="why" style="flex-basis:100%">${tgt.length ? '' : '揭穿不可用：' + why}</div>`;
@@ -699,13 +791,18 @@
     });
   }
   function onTokenClick(c) { if (selecting) return selecting(c); sfx('uiClick'); charDetail(c); }
-  async function pickZone(title, body, exclude) {
-    return modal({
-      title, body, prompt: true, mount: (m, close) => {
-        const g = h(`<div class="zonepick">${Z.map((z, i) => `<button style="--zc:${ZC[i]}" data-z="${i}" ${i === exclude ? 'disabled' : ''}>${z.c}·${z.n}</button>`).join('')}</div>`);
-        m.querySelector('.body').append(g);
-        g.querySelectorAll('button').forEach(b => (b.onclick = () => { sfx('selectPick'); close(+b.dataset.z); }));
-      },
+  // 选房间：直接点棋盘上的房间，或点提示条里的按钮
+  function pickZone(title, body, exclude) {
+    return new Promise(res => {
+      sfx('selectHighlight');
+      const pb = document.getElementById('prompt');
+      const zs = ui.board.querySelectorAll('.house .zone');
+      zs.forEach(g => { if (+g.dataset.z !== exclude) g.classList.add('pickable'); });
+      pb.innerHTML = `<div class="promptbar" style="flex-wrap:wrap"><span>${title} <span class="hint" style="font-weight:400">${body} 点一个房间</span></span><div class="zonepick" style="margin:0;flex:1 1 100%;grid-template-columns:repeat(5,minmax(0,1fr))">${Z.map((z, i) => `<button style="--zc:${ZC[i]};padding:6px 2px" data-z="${i}" ${i === exclude ? 'disabled' : ''}>${z.n}</button>`).join('')}</div></div>`;
+      const done = z => { ui.pickZ = null; ui.cancelSel = null; zs.forEach(g => g.classList.remove('pickable')); pb.innerHTML = ''; res(z); };
+      ui.pickZ = z => { if (z === exclude) return sfx('uiDisabled'); sfx('selectPick'); done(z); };
+      ui.cancelSel = () => done(undefined);
+      pb.querySelectorAll('button[data-z]').forEach(b => (b.onclick = () => ui.pickZ(+b.dataset.z)));
     });
   }
 
@@ -839,7 +936,7 @@
     else if (e.t === 'midnight') await midnight();
     else if (e.t === 'round') render();
   }
-  function flashZone(z) { const el = ui.board && ui.board.querySelector(`.z${z}`); if (!el) return; el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), sp(900)); }
+  function flashZone(z) { const el = ui.board && ui.board.querySelector(`.house .z${z}`); if (!el) return; el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), sp(900)); }
   async function afterDeath(elim) {
     if (elim < 0 || elim === undefined) return;
     if (elim === ME) {

@@ -142,71 +142,106 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold-h
 .stamp.show { opacity: 1; transform: translate(-50%, -50%) rotate(-14deg) scale(1); }
 .stamp.npc { color: #6b6b6b; } .stamp.player { color: #c0182e; } .stamp.right { color: #118a47; } .stamp.wrong { color: #c0182e; }
 
-/* ---------- 游戏主界面 ---------- */
-#game { display: grid; gap: 12px; grid-template-columns: 210px minmax(0, 1fr) 270px; grid-template-rows: auto 1fr; grid-template-areas: "top top top" "left board right"; align-items: start; }
-.topbar { grid-area: top; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
-.brand { font-family: var(--f-display); color: var(--gold-hi); font-size: 20px; letter-spacing: .04em; margin-right: auto; text-shadow: 0 0 10px rgba(255,160,60,.5); }
-.clock { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 30px; font-variant-numeric: tabular-nums; }
+/* ---------- 游戏主界面：一屏看完（不滚动），中间是等距 3D 豪宅 ---------- */
+#game { height: 100vh; height: 100dvh; min-height: 0; padding-block: 10px; display: grid; gap: 10px; grid-template-columns: 220px minmax(0, 1fr) 280px; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "top top top" "left board right" "left act right"; overflow: hidden; }
+.topbar { grid-area: top; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 8px; min-width: 0; position: relative; }
+.brand { font-family: var(--f-display); color: var(--gold-hi); font-size: 20px; letter-spacing: .04em; text-shadow: 0 0 10px rgba(255,160,60,.5); white-space: nowrap; }
+.clock { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 30px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .clock.mid { border-color: var(--danger); color: #ffd4d8; box-shadow: 0 0 14px rgba(255,90,106,.35); }
-.iconbtn { border: 1px solid var(--line); background: var(--bg2); border-radius: 3px; padding: 6px 10px; font-size: 13px; }
+.iconbtn { border: 1px solid var(--line); background: var(--bg2); border-radius: 3px; padding: 6px 10px; font-size: 13px; white-space: nowrap; }
 .iconbtn[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-hi); }
-.left { grid-area: left; display: grid; gap: 8px; }
-.right { grid-area: right; display: grid; gap: 12px; }
+.tools { display: flex; gap: 8px; margin-left: auto; }
+#b-menu, #b-hand { display: none; }
+.support { border-color: #ffdd57; color: #ffe9a0; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+.support-mini { display: none; }
+.support:hover { background: #3a2e14; box-shadow: 0 0 14px rgba(255,221,87,.35); }
+.support-title { position: fixed; top: max(12px, env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); z-index: 5; padding: 8px 14px; font-size: 14px; }
+/* 轮到谁：顶栏中间的大标签 */
+.turnpill { --pc: var(--gold); display: flex; align-items: center; gap: 8px; padding: 5px 14px 5px 8px; border-radius: 30px; border: 1.5px solid var(--pc); background: color-mix(in srgb, var(--pc) 16%, var(--bg2)); box-shadow: 0 0 16px color-mix(in srgb, var(--pc) 40%, transparent); min-width: 0; margin-inline: auto; }
+.turnpill .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--pc); box-shadow: 0 0 8px var(--pc); flex: none; }
+.turnpill b { font-family: var(--f-title); letter-spacing: .08em; white-space: nowrap; }
+.turnpill .ph { font-size: 12px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.turnpill.me { animation: mypulse 1.4s ease-in-out infinite; }
+.turnpill.me b { color: var(--gold-hi); }
+@keyframes mypulse { 50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--pc) 45%, transparent), 0 0 26px var(--pc); } }
+.left { grid-area: left; display: grid; gap: 8px; align-content: start; min-height: 0; overflow: auto; }
+.right { grid-area: right; display: grid; gap: 10px; align-content: start; min-height: 0; overflow: auto; }
 .panel { background: var(--panel); border: 1px solid var(--line); padding: 12px; }
-.panel h3 { margin: 0 0 8px; font-family: var(--f-title); font-size: 15px; letter-spacing: .15em; color: var(--gold-hi); display: flex; justify-content: space-between; align-items: center; }
+.panel h3 { margin: 0 0 8px; font-family: var(--f-title); font-size: 15px; letter-spacing: .15em; color: var(--gold-hi); display: flex; justify-content: space-between; align-items: center; gap: 6px; }
 .plist { display: grid; gap: 6px; }
-.pl { display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: center; padding: 7px 8px; border: 1px solid transparent; border-radius: 3px; background: var(--bg2); transition: border-color .2s, box-shadow .2s; }
+.pl { --pc: var(--gold); display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: center; padding: 7px 8px; border: 1px solid transparent; border-radius: 3px; background: var(--bg2); transition: border-color .2s, box-shadow .2s; position: relative; cursor: pointer; text-align: left; width: 100%; }
 .pl .dot { width: 12px; height: 12px; border-radius: 50%; }
-.pl .nm { font-weight: 700; }
-.pl .sub { font-size: 11.5px; color: var(--mute); }
-.pl.cur { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 0 16px rgba(217,181,106,.25); }
-.pl.out { opacity: .45; text-decoration: line-through; }
+.pl .nm { font-weight: 700; white-space: nowrap; }
+.pl .sub { font-size: 11.5px; color: var(--mute); white-space: nowrap; }
+.pl .turn { display: none; position: absolute; top: -8px; right: 6px; font-size: 10px; font-weight: 700; padding: 0 6px; border-radius: 8px; background: var(--pc); color: #140c18; letter-spacing: .1em; }
+.pl.cur { border-color: var(--pc); box-shadow: 0 0 0 1px var(--pc), 0 0 18px color-mix(in srgb, var(--pc) 45%, transparent); }
+.pl.cur .turn { display: block; }
+.pl.out { opacity: .45; } .pl.out .nm { text-decoration: line-through; }
+.pl.focus { outline: 2px dashed var(--pc); outline-offset: 2px; }
 .coins { display: flex; gap: 3px; }
 .coin { width: 14px; height: 14px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff2c0, #d9b56a 55%, #8a6a2a); box-shadow: 0 0 0 1px #6a4f1c; }
 .coin.used { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
 
-.board-wrap { grid-area: board; display: grid; gap: 10px; min-width: 0; }
-.board { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; grid-template-areas: "z0 z1" "z4 z4" "z2 z3"; position: relative; }
-.zone { --zc: var(--z-red); position: relative; min-height: 150px; border: 1px solid color-mix(in srgb, var(--zc) 55%, var(--line)); background:
-  linear-gradient(160deg, color-mix(in srgb, var(--zc) 22%, transparent), transparent 70%), var(--panel); padding: 10px 10px 12px; transition: box-shadow .3s, border-color .3s; overflow: hidden; }
-.zone::before { content: ""; position: absolute; inset: 5px; border: 1px solid color-mix(in srgb, var(--zc) 35%, transparent); pointer-events: none; }
-.zone .zh { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; position: relative; }
-.zone .zh .sw { width: 12px; height: 12px; background: var(--zc); transform: rotate(45deg); align-self: center; }
-.zone .zh b { font-family: var(--f-title); letter-spacing: .2em; font-size: 15px; }
-.zone .zh span { color: var(--mute); font-size: 12px; }
-.zone .zh .cnt { margin-left: auto; font-variant-numeric: tabular-nums; }
-.zone .glyph { position: absolute; right: 8px; bottom: 4px; width: 70px; opacity: .12; pointer-events: none; }
-.zone .toks { display: flex; flex-wrap: wrap; gap: 8px 6px; position: relative; min-height: calc(var(--tok) + 18px); }
-.zone.z4 { --zc: var(--z-yellow); background: repeating-linear-gradient(0deg, rgba(230,180,60,.05) 0 2px, transparent 2px 4px), linear-gradient(160deg, rgba(230,180,60,.18), transparent 70%), var(--panel); }
-.zone.z0 { --zc: var(--z-red); grid-area: z0; } .zone.z1 { --zc: var(--z-blue); grid-area: z1; } .zone.z2 { --zc: var(--z-green); grid-area: z2; } .zone.z3 { --zc: var(--z-purple); grid-area: z3; } .zone.z4 { grid-area: z4; min-height: 120px; }
-.zone.flash { box-shadow: 0 0 0 2px var(--zc), 0 0 30px var(--zc); }
-.zone.pickable { cursor: pointer; box-shadow: 0 0 0 2px var(--zc); animation: pulse 1.2s infinite; }
+/* 棋盘：SVG 画房间，宾客是叠在上面的按钮 */
+.board-wrap { grid-area: board; display: grid; grid-template-rows: minmax(0, 1fr); min-width: 0; min-height: 0; position: relative; }
+.stage { --pc: transparent; position: relative; min-height: 0; border-radius: 10px; transition: box-shadow .4s; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--pc) 70%, transparent), inset 0 0 40px color-mix(in srgb, var(--pc) 22%, transparent); }
+.board { position: absolute; left: 0; top: 0; }
+.board svg.house { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.house .zone .fl { transition: filter .3s; }
+.house .zone.flash .fl { filter: brightness(1.7) drop-shadow(0 0 6px #fff); }
+.house .zone.mine .glowline { opacity: 1; }
+.house .glowline { opacity: 0; transition: opacity .3s; }
+.house .zone.pickable { cursor: pointer; pointer-events: auto; }
+.house .zone.pickable .fl { animation: floorpulse 1s ease-in-out infinite; }
+@keyframes floorpulse { 50% { filter: brightness(1.5); } }
+.rlabel { --zc: var(--z-red); position: absolute; transform: translate(-50%, -100%); display: flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 4px; background: rgba(18,12,26,.82); border: 1px solid color-mix(in srgb, var(--zc) 70%, transparent); font-size: var(--lf, 13px); white-space: nowrap; pointer-events: none; z-index: 2; }
+.rlabel i { width: .7em; height: .7em; background: var(--zc); transform: rotate(45deg); }
+.rlabel b { font-family: var(--f-title); letter-spacing: .12em; }
+.rlabel span { color: var(--mute); font-variant-numeric: tabular-nums; }
+.rlabel.here { border-color: var(--gold-hi); box-shadow: 0 0 10px rgba(243,220,160,.45); }
+.rlabel.here::after { content: "你在这"; font-size: .8em; color: #140c18; background: var(--gold-hi); padding: 0 4px; border-radius: 3px; font-weight: 700; }
 
-.tok { width: var(--tok); display: grid; justify-items: center; gap: 2px; border: 0; background: none; padding: 0; position: relative; transition: opacity .25s, filter .25s; }
-.tok .ring { width: var(--tok); height: var(--tok); border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 50% 35%, #463559, #1b1326); border: 2px solid #5a4870; position: relative; }
+.tok { --tk: 40px; --sc: transparent; position: absolute; width: var(--tk); display: grid; justify-items: center; border: 0; background: none; padding: 0; transition: opacity .25s, filter .25s, left .0s, top .0s; }
+.tok .body { position: relative; display: grid; justify-items: center; transform-origin: 50% calc(var(--tk) - 2px); transition: transform .45s cubic-bezier(.3,1.4,.5,1); }
+.tok::before { content: ""; position: absolute; left: 50%; top: calc(var(--tk) - 5px); width: calc(var(--tk) * .9); height: calc(var(--tk) * .3); transform: translateX(-50%); border-radius: 50%; background: rgba(0,0,0,.45); filter: blur(1.5px); }
+.tok .ring { width: var(--tk); height: var(--tk); border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 50% 35%, #463559, #1b1326); border: 2px solid #5a4870; position: relative; box-shadow: 0 0 0 1px rgba(0,0,0,.4); }
 .tok .pt { width: 100%; height: 100%; display: block; }
-.tok .lb { font-size: 11.5px; line-height: 1.2; white-space: nowrap; }
-.tok.mine .ring { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(217,181,106,.35), 0 0 12px rgba(217,181,106,.5); }
+.tok .lb { font-size: var(--lbf, 11px); line-height: 1.15; white-space: nowrap; padding: 0 3px; margin-top: 1px; border-radius: 3px; background: rgba(18,12,26,.72); position: relative; }
+.tok.mine .ring { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(217,181,106,.45), 0 0 14px rgba(217,181,106,.7); }
 .tok.mine .lb { color: var(--gold-hi); font-weight: 700; }
-.tok .you { position: absolute; top: -4px; left: -4px; background: var(--gold); color: #21140a; font-size: 10px; font-weight: 700; padding: 0 4px; border-radius: 2px; }
-.tok .tag { position: absolute; top: -2px; right: 2px; width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--bg); }
-.tok .know { position: absolute; bottom: 14px; right: -4px; font-size: 9.5px; padding: 0 3px; border-radius: 2px; font-weight: 700; }
+.tok .you { position: absolute; top: -5px; left: -5px; background: var(--gold); color: #21140a; font-size: 10px; font-weight: 700; padding: 0 4px; border-radius: 2px; z-index: 2; }
+.tok .tag { position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--bg); z-index: 2; }
+.tok .know { position: absolute; top: calc(var(--tk) - 12px); right: -8px; font-size: 9.5px; padding: 0 3px; border-radius: 2px; font-weight: 700; z-index: 2; }
 .tok .know.npc { background: #5d5a66; color: #fff; } .tok .know.pl { background: #c0182e; color: #fff; }
-.tok.dead { filter: grayscale(1) brightness(.55); opacity: .55; }
+/* 嫌疑光：推理笔记里的可能性，直接亮在棋盘上 */
+.tok.sus .ring { border-color: var(--sc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--sc) calc(var(--sp) * 100%), transparent), 0 0 calc(4px + var(--sp) * 22px) color-mix(in srgb, var(--sc) calc(30% + var(--sp) * 70%), transparent); }
+.tok.sus.hot .ring { animation: susglow 1.6s ease-in-out infinite; }
+@keyframes susglow { 50% { box-shadow: 0 0 0 3px var(--sc), 0 0 28px var(--sc); } }
+.tok .pct { position: absolute; top: -7px; right: -10px; font: 700 10px/1.25 var(--f-body); padding: 0 4px; border-radius: 8px; background: var(--sc); color: #140c18; z-index: 2; font-variant-numeric: tabular-nums; }
+.tok.sure .pct { background: var(--danger); color: #fff; }
+.board.focusing .tok:not(.sus):not(.mine):not(.dead) { opacity: .45; filter: grayscale(.6); }
+.tok.dead { filter: grayscale(1) brightness(.8); opacity: .75; }
+.tok.dead .body { transform: translateY(calc(var(--tk) * .32)) rotate(-82deg) scale(.78); }
+.tok.dead .lb, .tok.dead::before { opacity: 0; }
 .tok.dead .ring::after { content: ""; position: absolute; inset: 0; background: linear-gradient(45deg, transparent 46%, #c0182e 46% 54%, transparent 54%), linear-gradient(-45deg, transparent 46%, #c0182e 46% 54%, transparent 54%); }
 .board.selecting .tok:not(.eligible) { opacity: .25; filter: grayscale(.8); pointer-events: none; }
 .tok.eligible .ring { border-color: var(--gold-hi); animation: glow 1s ease-in-out infinite alternate; }
-.tok.eligible { cursor: pointer; animation: hop 1.2s ease-in-out infinite; }
+.tok.eligible .body { animation: hop 1.2s ease-in-out infinite; }
+.tok.eligible { cursor: pointer; }
 .tok.eligible:hover .ring { transform: scale(1.08); }
+.tok.turnme .ring { animation: glow 1.1s ease-in-out infinite alternate; }
 @keyframes glow { to { box-shadow: 0 0 0 3px var(--gold-hi), 0 0 18px var(--gold); } }
-@keyframes hop { 50% { transform: translateY(-3px); } }
+@keyframes hop { 50% { transform: translateY(-4px); } }
 @keyframes pulse { 50% { box-shadow: 0 0 0 3px var(--zc), 0 0 24px var(--zc); } }
-.tok .slash { position: absolute; left: -10px; right: -10px; top: 50%; height: 4px; background: linear-gradient(90deg, transparent, #fff, #ff5a6a, transparent); transform: rotate(-35deg) scaleX(0); transform-origin: left; animation: slash .28s ease-out forwards; z-index: 3; }
+.tok .slash { position: absolute; left: -10px; right: -10px; top: 40%; height: 4px; background: linear-gradient(90deg, transparent, #fff, #ff5a6a, transparent); transform: rotate(-35deg) scaleX(0); transform-origin: left; animation: slash .28s ease-out forwards; z-index: 3; }
 @keyframes slash { to { transform: rotate(-35deg) scaleX(1); opacity: 0; } }
 
-.promptbar { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 12px; border: 1px solid var(--gold); background: #2c1f17; color: var(--gold-hi); font-weight: 700; animation: drop .3s ease-out; }
+#prompt { position: absolute; left: 0; right: 0; top: 0; z-index: 30; pointer-events: none; }
+#prompt > * { pointer-events: auto; }
+.promptbar { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 8px 12px; border: 1px solid var(--gold); background: rgba(44,31,23,.95); color: var(--gold-hi); font-weight: 700; animation: drop .3s ease-out; border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
 @keyframes drop { from { transform: translateY(-8px); opacity: 0; } }
-.actionbar { display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; padding: 12px; background: var(--panel); border: 1px solid var(--line); position: sticky; bottom: 0; z-index: 5; }
+.actionbar { grid-area: act; display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); z-index: 5; transition: border-color .3s, box-shadow .3s; }
+.actionbar.mine { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), 0 0 24px rgba(217,181,106,.35); }
 .actionbar .status { flex: 1 1 180px; display: grid; align-content: center; min-width: 0; }
 .actionbar .status b { font-family: var(--f-title); letter-spacing: .1em; }
 .actionbar .big { padding: 12px 22px; font-size: 16px; display: flex; gap: 8px; align-items: center; }
@@ -215,12 +250,15 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold-h
 .idhand { display: flex; gap: 10px; }
 .idhand .flip { width: 100px; height: 140px; cursor: pointer; }
 .idhand .flip .face { font-size: 11px; }
+.nb-glow { font-size: 12px; padding: 2px 8px; }
 .nb-row { display: grid; gap: 4px; padding: 8px 0; border-top: 1px dashed var(--line); }
 .nb-row:first-of-type { border-top: 0; }
-.nb-head { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+.nb-head { display: flex; align-items: center; gap: 6px; font-weight: 700; background: none; border: 0; padding: 0; text-align: left; }
+.nb-head[aria-pressed="true"] { color: var(--gold-hi); text-decoration: underline dotted; }
+.nb-head .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
 .nb-sus { display: flex; flex-wrap: wrap; gap: 4px; }
-.sus { display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px 1px 2px; border-radius: 20px; background: var(--bg2); border: 1px solid var(--line); font-size: 11.5px; cursor: pointer; }
-.sus .mini { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; background: #2a1e3a; }
+.sus { display: inline-flex; align-items: center; gap: 4px; padding: 1px 6px 1px 2px; border-radius: 20px; background: var(--bg2); border: 1px solid var(--line); font-size: 11.5px; cursor: pointer; white-space: nowrap; }
+.sus .mini { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; background: #2a1e3a; flex: none; }
 .sus i { font-style: normal; color: var(--mute); font-variant-numeric: tabular-nums; }
 .sus.hot { border-color: var(--danger); }
 
@@ -324,27 +362,57 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold-h
 .crown { font-size: 22px; }
 #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 90; }
 
-@media (max-width: 1080px) {
-  #game { grid-template-columns: minmax(0, 1fr) 250px; grid-template-areas: "top top" "left left" "board right"; }
-  .left .plist { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+@media (min-width: 761px) { .toasts { width: 220px; bottom: 16px; } }
+@media (max-width: 1080px) and (min-width: 761px) {
+  .toasts { width: 190px; }
+  #game { grid-template-columns: 190px minmax(0, 1fr) 240px; }
+  .brand { display: none; }
 }
+/* 手机：一屏放下 顶栏 / 玩家条 / 豪宅 / 推理笔记条 / 行动栏，不需要上下滑 */
 @media (max-width: 760px) {
-  :root { --tok: 46px; }
-  #game { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "left" "board" "right"; }
-  .left .plist { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #game { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; grid-template-areas: "top" "left" "board" "right" "act"; gap: 6px; padding-block: 6px; padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px)); }
+  .topbar { gap: 6px; padding-bottom: 6px; }
+  .brand { display: none; }
+  .clock { padding: 3px 8px; font-size: 12px; } .clock .hint { display: none; }
+  .turnpill { padding: 3px 10px 3px 6px; margin-inline: 0 auto; flex: 1 1 auto; }
+  .turnpill b { font-size: 14px; }
+  #b-menu, #b-hand, .support-mini { display: inline-block; padding: 5px 9px; }
+  .tools .support { display: none; }
+  .tools { display: none; position: absolute; right: 0; top: calc(100% + 4px); z-index: 40; flex-direction: column; background: var(--panel); border: 1px solid var(--gold); padding: 8px; box-shadow: 0 12px 30px rgba(0,0,0,.6); }
+  .tools.open { display: flex; }
+  .tools .iconbtn { padding: 10px 16px; font-size: 14px; text-align: left; }
+  .left { overflow: visible; }
+  .left .panel { padding: 0; background: none; border: 0; }
   .left .panel h3 { display: none; }
-  .zone { min-height: 120px; padding: 8px; }
-  .zone .toks { gap: 6px 4px; }
-  .tok .lb { font-size: 10.5px; }
-  .brand { font-size: 16px; }
+  .plist { display: flex; gap: 6px; overflow-x: auto; padding: 8px 2px 2px; scrollbar-width: none; }
+  .pl { flex: 1 0 auto; width: auto; grid-template-columns: 10px auto auto; gap: 5px; padding: 4px 8px; }
+  .pl .dot { width: 10px; height: 10px; }
+  .pl .nm { font-size: 13px; } .pl .sub { font-size: 10.5px; }
+  .pl .coin { width: 11px; height: 11px; }
+  .board-wrap { aspect-ratio: var(--bar, 1); max-height: calc(100dvh - 250px); width: 100%; justify-self: center; }
+  .right { overflow: auto; min-height: 0; }
+  .right .hand-panel { display: none; }
+  .right .panel { padding: 6px 8px; min-height: 100%; }
+  .right .panel h3 { font-size: 13px; margin-bottom: 4px; }
+  .right .panel .hint.sub { display: none; }
+  .nb-row { padding: 5px 0; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 8px; }
+  .nb-row > :not(.nb-head) { grid-column: 2; }
+  .nb-row .nb-head { grid-row: 1 / span 3; align-self: start; padding-top: 2px; }
+  .nb-row .hint { font-size: 11px; }
   .banner { font-size: 22px; letter-spacing: .25em; }
-  .idhand .flip { width: 86px; height: 120px; }
-  .actionbar { padding: 8px; gap: 8px; }
-  .actionbar .status { flex-basis: 100%; }
-  .actionbar .status .why { display: none; }
-  .actionbar .big { flex: 1 1 0; justify-content: center; padding: 10px 12px; font-size: 15px; }
+  .actionbar { padding: 6px 8px; gap: 6px; flex-wrap: nowrap; }
+  .actionbar .status { flex: 1 1 auto; }
+  .actionbar .status b { font-size: 14px; }
+  .actionbar .status .why { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .actionbar .big { flex: 0 0 auto; justify-content: center; padding: 10px 14px; font-size: 15px; }
   .actionbar > .why { display: none; }
   .reveal .flip { width: 190px; height: 266px; }
+  .toasts { top: auto; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); flex-direction: column-reverse; }
+  .toast { font-size: 12.5px; padding: 6px 10px; }
+}
+@media (max-width: 760px) and (max-height: 640px) {
+  .right .panel h3 { display: none; }
+  .pl .sub { display: none; }
 }
 /* 动态效果开关（设置里可关）：关掉后停掉装饰动画 */
 html.no-motion *, html.no-motion *::before, html.no-motion *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
@@ -1075,6 +1143,105 @@ const Scene = (() => {
   return { mount, setMode, setMotion };
 })();
 
+// ===== 等距 3D 豪宅：五个独立房间（红舞厅 蓝泳池 黄控制室 绿温室 紫书房），固定视角，一眼看完 =====
+// 世界坐标：x 往右下、y 往左下、z 向上；屏幕 = ((x-y)·cos30, (x+y)·sin30 - z)。房间是 X×Y 的地板加两面后墙。
+const House = (() => {
+  const C = Math.cos(Math.PI / 6), S = 0.5, X = 8, Y = 5, H = 2.2, BASE = 0.45;
+  const COL = ['#d04556', '#4a86d8', '#3fa070', '#9562d0', '#e6b43c'];
+  // 摆位：红左上、蓝右上、黄居中、绿左下、紫右下（宣传片同款）
+  const ROOM = [[0, 0], [7, -7], [13.4, 13.4], [20.4, 6.4], [10.3, 3.3]];
+  const ORDER = [0, 1, 4, 2, 3];   // 画的先后（后面的先画）
+  const P = (x, y, z = 0) => [(x - y) * C, (x + y) * S - z];
+  // 整栋房子的边界（世界单位）
+  let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+  ROOM.forEach(([x0, y0]) => [[x0, y0, H + 1.1], [x0 + X / 2, y0, H + 2.1], [x0 + X, y0, H], [x0 + X, y0 + Y, -BASE], [x0, y0 + Y, H], [x0, y0 + Y, -BASE]].forEach(([x, y, z]) => {
+    const [sx, sy] = P(x, y, z); minX = Math.min(minX, sx); maxX = Math.max(maxX, sx); minY = Math.min(minY, sy); maxY = Math.max(maxY, sy);
+  }));
+  const BW = maxX - minX, BH = maxY - minY;
+
+  const hex = c => [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16));
+  const mix = (a, b, t) => { const A = hex(a), B = hex(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',')})`; };
+  const pts = arr => arr.map(([x, y, z]) => P(x, y, z).map(v => v.toFixed(3)).join(',')).join(' ');
+  const poly = (arr, fill, extra = '') => `<polygon points="${pts(arr)}" fill="${fill}" ${extra}/>`;
+
+  function room(z) {
+    const [x0, y0] = ROOM[z], c = COL[z], x1 = x0 + X, y1 = y0 + Y;
+    const floorA = mix(c, '#1b1426', 0.62), floorB = mix(c, '#1b1426', 0.74);
+    const wallX = mix(c, '#120c1a', 0.38), wallY = mix(c, '#120c1a', 0.56), lip = mix(c, '#ffffff', 0.25);
+    let s = `<g class="zone z${z}" data-z="${z}">`;
+    // 底座（浮在夜色里的一块地台）
+    s += poly([[x0, y1, 0], [x1, y1, 0], [x1, y1, -BASE], [x0, y1, -BASE]], mix(c, '#000000', 0.7));
+    s += poly([[x1, y0, 0], [x1, y1, 0], [x1, y1, -BASE], [x1, y0, -BASE]], mix(c, '#000000', 0.55));
+    // 地板 + 方格
+    s += `<g class="fl">${poly([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], floorA)}`;
+    for (let i = 0; i < X; i++) for (let j = 0; j < Y; j++) if ((i + j) % 2) s += poly([[x0 + i, y0 + j], [x0 + i + 1, y0 + j], [x0 + i + 1, y0 + j + 1], [x0 + i, y0 + j + 1]], floorB);
+    s += '</g>';
+    // 两面后墙（沿 x 的墙朝向观众更亮）
+    s += poly([[x0, y0, 0], [x1, y0, 0], [x1, y0, H], [x0, y0, H]], wallX);
+    s += poly([[x0, y0, 0], [x0, y1, 0], [x0, y1, H], [x0, y0, H]], wallY);
+    s += `<polyline points="${pts([[x0, y1, H], [x0, y0, H], [x1, y0, H]])}" fill="none" stroke="${lip}" stroke-width=".14" stroke-linejoin="round"/>`;
+    s += `<polyline points="${pts([[x0, y0, 0], [x0, y0, H]])}" stroke="${mix(c, '#000000', 0.5)}" stroke-width=".06"/>`;
+    s += props(z, x0, y0, c);
+    // “你在这”的金边
+    s += `<polygon class="glowline" points="${pts([[x0, y0], [x1, y0], [x1, y1], [x0, y1]])}" fill="none" stroke="#f3dca0" stroke-width=".12" stroke-dasharray=".5 .3"/>`;
+    // 可点击区域（选房间时用）
+    s += `<polygon class="hit" points="${pts([[x0, y0, 0], [x1, y0, 0], [x1, y0, H], [x1, y1, 0], [x0, y1, 0], [x0, y1, H], [x0, y0, H]])}" fill="transparent"/>`;
+    return s + '</g>';
+  }
+  function props(z, x0, y0, c) {
+    let s = '';
+    if (z === 0) { // 舞厅：吊灯 + 墙上的唱片
+      const [cx, cy] = P(x0 + 1.4, y0 + 1.4, H + .2);
+      s += `<line x1="${cx}" y1="${P(x0 + 1.4, y0 + 1.4, H + 1)[1]}" x2="${cx}" y2="${cy}" stroke="#d9b56a" stroke-width=".05"/>`;
+      s += `<ellipse cx="${cx}" cy="${cy}" rx=".7" ry=".25" fill="#e9be5c"/><ellipse cx="${cx}" cy="${cy - .08}" rx=".5" ry=".14" fill="#fff3c4" opacity=".8"/>`;
+      s += `<polyline points="${pts([[x0, y0 + Y, 1.5], [x0, y0, 1.5], [x0 + X, y0, 1.5]])}" fill="none" stroke="#d9b56a" stroke-width=".05" opacity=".6"/>`;
+      s += poly([[x0 + 5.2, y0 + .1, 0], [x0 + 7.4, y0 + .1, 0], [x0 + 7.4, y0 + .1, .85], [x0 + 5.2, y0 + .1, .85]], '#1a1016');   // 三角钢琴的背影
+      s += poly([[x0 + 5.2, y0 + .1, .85], [x0 + 7.4, y0 + .1, .85], [x0 + 7.4, y0 + 1.1, .85], [x0 + 5.2, y0 + 1.1, .85]], '#2a2228');
+    } else if (z === 1) { // 泳池：地板中间一池水
+      s += poly([[x0 + 1.2, y0 + 1], [x0 + X - 1.2, y0 + 1], [x0 + X - 1.2, y0 + Y - 1], [x0 + 1.2, y0 + Y - 1]], '#7fc0ea', 'opacity=".55"');
+      s += `<polyline points="${pts([[x0 + 1.2, y0 + Y - 1], [x0 + 1.2, y0 + 1], [x0 + X - 1.2, y0 + 1]])}" fill="none" stroke="#e8eef2" stroke-width=".07" opacity=".7"/>`;
+      for (let i = 0; i < 3; i++) s += `<polyline points="${pts([[x0 + 2 + i * 1.6, y0 + 2.2], [x0 + 2.8 + i * 1.6, y0 + 2.2]])}" stroke="#e8f6ff" stroke-width=".06" opacity=".7"/>`;
+    } else if (z === 2) { // 温室：墙角两盆植物 + 玻璃格
+      for (const [a, b] of [[x0 + .6, y0 + .6], [x0 + X - .8, y0 + .6]]) { const [px, py] = P(a, b, 0), [lx, ly] = P(a, b, 1.3); s += `<rect x="${px - .3}" y="${py - .55}" width=".6" height=".55" fill="#b0714a"/><circle cx="${lx}" cy="${ly}" r=".75" fill="#5fa35a"/><circle cx="${lx - .25}" cy="${ly - .3}" r=".3" fill="#8fd08a" opacity=".6"/>`; }
+      for (let i = 1; i < 4; i++) s += `<polyline points="${pts([[x0 + i * 2, y0, .3], [x0 + i * 2, y0, H - .1]])}" stroke="#cfead2" stroke-width=".05" opacity=".5"/>`;
+    } else if (z === 3) { // 书房：整面书架
+      const book = ['#7b4a9e', '#b0743a', '#3f6e9a', '#9e3f4a', '#d9b56a'];
+      for (let r = 0; r < 2; r++) for (let i = 0; i < 12; i++) { const a = x0 + .6 + i * .55; s += poly([[a, y0 + .02, .35 + r * .9], [a + .45, y0 + .02, .35 + r * .9], [a + .45, y0 + .02, 1.05 + r * .9], [a, y0 + .02, 1.05 + r * .9]], book[(i * 3 + r) % 5]); }
+    } else if (z === 4) { // 控制室：三块发光屏幕
+      for (let i = 0; i < 3; i++) { const a = x0 + 1 + i * 2.2; s += poly([[a, y0 + .02, .7], [a + 1.6, y0 + .02, .7], [a + 1.6, y0 + .02, 1.8], [a, y0 + .02, 1.8]], '#2c2a33'); s += poly([[a + .12, y0 + .03, .82], [a + 1.48, y0 + .03, .82], [a + 1.48, y0 + .03, 1.68], [a + .12, y0 + .03, 1.68]], '#f3d98a', 'class="screen"'); }
+    }
+    return s;
+  }
+  function svg() {
+    return `<svg class="house" viewBox="${minX.toFixed(3)} ${minY.toFixed(3)} ${BW.toFixed(3)} ${BH.toFixed(3)}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${ORDER.map(room).join('')}</svg>`;
+  }
+  // 把世界坐标换成 board 元素里的像素
+  function fit(w, h) { const u = Math.min(w / BW, h / BH); return { u, w: BW * u, h: BH * u }; }
+  const px = (u, x, y, z = 0) => { const [sx, sy] = P(x, y, z); return [(sx - minX) * u, (sy - minY) * u]; };
+  // 房间里的站位：试遍各种行列和错位排法，挑屏幕上头像间距最大的一种（等距下前后排很容易互相挡脸）
+  function slots(z, n) {
+    const [x0, y0] = ROOM[z], mx = .5, my = .45, uw = X - 2 * mx, uh = Y - 2 * my;
+    let best = null;
+    for (let c = 1; c <= Math.min(n, 8); c++) {
+      const r = Math.ceil(n / c); if (r > 3) continue;
+      for (const st of [0, .5]) {
+        const dx = uw / (c + (r > 1 ? st : 0)), dy = uh / r, pos = [];
+        for (let i = 0; i < n; i++) {
+          const row = Math.floor(i / c), col = i % c, inRow = row === r - 1 ? n - row * c : c;
+          pos.push([x0 + mx + dx * (col + .5 + (row % 2 ? st : 0) + (c - inRow) / 2), y0 + my + dy * (row + .5)]);
+        }
+        let d = 1e9;
+        for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { const a = P(...pos[i]), b = P(...pos[j]); d = Math.min(d, Math.hypot(a[0] - b[0], (a[1] - b[1]) / 1.45)); }
+        if (n === 1) d = 3;
+        if (!best || d > best.d + 1e-6) best = { pos, d };
+      }
+    }
+    return best;
+  }
+  const labelAt = z => { const [x0, y0] = ROOM[z]; return [x0 + X / 2, y0, H + 1.05]; };
+  return { svg, fit, px, slots, labelAt, ROOM, X, Y, ratio: BW / BH };
+})();
+
 // ===== 联机层：主机裁判 + 端到端加密的私密信息 =====
 const Net = (() => {
   const E = Engine;
@@ -1534,6 +1701,10 @@ const Net = (() => {
     '<svg viewBox="0 0 60 60" class="glyph"><rect x="2" y="6" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><rect x="33" y="6" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><rect x="2" y="30" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><rect x="33" y="30" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><path d="M20 56H40" stroke="#fff" stroke-width="3"/></svg>',
   ];
 
+  // 支持作者（Buy Me a Coffee）：填上链接就会出现在右上角；留空则不显示
+  const SUPPORT_URL = '';
+  const supportBtn = cls => SUPPORT_URL ? `<a class="iconbtn support ${cls || ''}" href="${SUPPORT_URL}" target="_blank" rel="noopener" title="喜欢这个游戏？请作者喝杯咖啡">☕ 支持作者</a>` : '';
+
   // G = 本机看到的局面（公开信息 + 自己的身份），priv = 自己的私密信息
   let G = null, ME = 0, priv = null, conn = null, session = 0;
   let fast = false, catchup = false, tags = {}, tokEls = {}, ui = {}, selecting = null;
@@ -1621,7 +1792,7 @@ const Net = (() => {
   function showTitle() { Scene.setMode('full');
     stopSession();
     app.innerHTML = '';
-    const s = h(`<section class="screen" id="title"><div class="marquee">
+    const s = h(`<section class="screen" id="title">${supportBtn('support-title')}<div class="marquee">
       <div class="eyebrow">一九二七 · 某个下雨的夜晚</div>
       <div class="neon" style="margin-top:14px">Midnight Party</div>
       <div class="title-cn">暗夜派对</div>
@@ -2052,24 +2223,37 @@ const Net = (() => {
     const s = h(`<section class="screen" id="game">
       <div class="topbar"><div class="brand">Midnight Party</div>${online ? `<span class="clock" title="联机房号">房号 ${esc(conn.code || '')}</span>` : ''}
         <div class="clock" id="clock"></div>
-        <button class="iconbtn" id="b-log">日志</button><button class="iconbtn" id="b-rules">规则</button>
+        <div class="turnpill" id="turn" aria-live="polite"></div>
+        ${SUPPORT_URL ? `<a class="iconbtn support support-mini" href="${SUPPORT_URL}" target="_blank" rel="noopener" aria-label="支持作者">☕</a>` : ''}<button class="iconbtn" id="b-hand" aria-label="看我的身份">身份</button>
+        <button class="iconbtn" id="b-menu" aria-label="菜单" aria-expanded="false">☰</button>
+        <div class="tools" id="tools"><button class="iconbtn" id="b-log">日志</button><button class="iconbtn" id="b-rules">规则</button>
         <button class="iconbtn" id="b-snd" aria-pressed="${SFX.on}">音效 ${SFX.on ? '开' : '关'}</button><button class="iconbtn" id="b-mus" aria-pressed="${Music.on}">音乐 ${Music.on ? '开' : '关'}</button>
         <button class="iconbtn" id="b-fast" aria-pressed="false">快进</button>
-        <button class="iconbtn" id="b-exit">退出</button></div>
+        <button class="iconbtn" id="b-exit">退出</button>${supportBtn()}</div></div>
       <aside class="left"><div class="panel"><h3>宾客名单 <span class="hint" style="letter-spacing:0">玩家</span></h3><div class="plist" id="plist"></div></div></aside>
-      <main class="board-wrap"><div id="prompt"></div><div class="board" id="board">${Z.map((z, i) => `<div class="zone z${i}" data-z="${i}">${GLYPH[i]}<div class="zh"><i class="sw"></i><b>${z.c}·${z.n}</b><span>${i === 4 ? '可监控' : '房间'}</span><span class="cnt"></span></div><div class="toks"></div></div>`).join('')}</div>
-        <div class="actionbar" id="actions"></div></main>
-      <aside class="right"><div class="panel"><h3>我的身份 <span class="hint" style="letter-spacing:0">悬停查看</span></h3><div class="idhand" id="hand"></div></div>
-        <div class="panel"><h3>推理笔记</h3><div class="hint" style="margin-bottom:4px">根据公开信息推算每个对手可能是谁</div><div id="notes"></div></div></aside>
+      <main class="board-wrap"><div class="stage" id="stage"><div id="prompt"></div><div class="board" id="board">${House.svg()}${Z.map((z, i) => `<div class="rlabel" data-z="${i}" style="--zc:${ZC[i]}"><i></i><b>${z.c}·${z.n}</b><span class="cnt"></span></div>`).join('')}</div></div>
+</main>
+      <div class="actionbar" id="actions"></div>
+      <aside class="right"><div class="panel hand-panel"><h3>我的身份 <span class="hint" style="letter-spacing:0">悬停查看</span></h3><div class="idhand" id="hand"></div></div>
+        <div class="panel"><h3>推理笔记 <button class="chip nb-glow" id="b-glow" aria-pressed="${settings.glow !== false}">嫌疑光 ${settings.glow !== false ? '开' : '关'}</button></h3><div class="hint sub" style="margin-bottom:4px">根据公开信息推算每个对手可能是谁。棋盘上发光的人就是嫌疑人，越亮越可疑；点对手名字只看他的嫌疑人。</div><div id="notes"></div></div></aside>
     </section>`);
     app.append(s);
-    ui.board = s.querySelector('#board');
+    ui.board = s.querySelector('#board'); ui.stage = s.querySelector('#stage'); ui.focus = -1;
+    s.style.setProperty('--bar', House.ratio.toFixed(3));
     tokEls = {};
     G.chars.forEach(c => {
-      const b = h(`<button class="tok" data-c="${c.id}" aria-label="${c.name}"><div class="ring">${Art.portrait(c.id)}</div><div class="lb">${c.name}</div></button>`);
+      const b = h(`<button class="tok" data-c="${c.id}" aria-label="${c.name}"><div class="body"><div class="ring">${Art.portrait(c.id)}</div><div class="lb">${c.name}</div></div></button>`);
       b.onclick = () => onTokenClick(c.id);
-      tokEls[c.id] = b;
+      tokEls[c.id] = b; ui.board.append(b);
     });
+    ui.board.querySelectorAll('.house .zone').forEach(g => g.addEventListener('click', () => ui.pickZ && ui.pickZ(+g.dataset.z)));
+    const tools = s.querySelector('#tools'), menu = s.querySelector('#b-menu');
+    const closeMenu = () => { tools.classList.remove('open'); menu.setAttribute('aria-expanded', 'false'); };
+    menu.onclick = e => { e.stopPropagation(); sfx('uiClick'); const o = tools.classList.toggle('open'); menu.setAttribute('aria-expanded', o); };
+    document.addEventListener('pointerdown', e => { if (!tools.contains(e.target) && e.target !== menu) closeMenu(); });
+    tools.addEventListener('click', e => { if (e.target.closest('button')) setTimeout(closeMenu, 120); });
+    s.querySelector('#b-hand').onclick = () => { sfx('uiClick'); showHand(); };
+    s.querySelector('#b-glow').onclick = e => { settings.glow = settings.glow === false; saveSettings(); e.currentTarget.setAttribute('aria-pressed', settings.glow); e.currentTarget.textContent = `嫌疑光 ${settings.glow ? '开' : '关'}`; sfx('uiClick'); render(); };
     s.querySelector('#b-log').onclick = () => { sfx('uiClick'); showLog(); };
     s.querySelector('#b-rules').onclick = () => { sfx('uiClick'); showRules(); };
     s.querySelector('#b-snd').onclick = e => { const on = SFX.toggle(); e.currentTarget.textContent = `音效 ${on ? '开' : '关'}`; e.currentTarget.setAttribute('aria-pressed', on); sfx('uiClick'); };
@@ -2081,18 +2265,49 @@ const Net = (() => {
       const v = await modal({ title: '离开派对？', body: hostOnline ? '你是房主。你一离开，这局就会中断，朋友们也玩不下去了。' : '退出会结束你这一局。', dismiss: 'no', buttons: [{ label: '留下', value: 'no', kind: 'ghost' }, { label: '退出', value: 'yes', kind: 'danger' }] });
       if (v === 'yes') showTitle();
     };
+    if (window.ResizeObserver) { const ro = new ResizeObserver(() => { if (!ui.stage.isConnected) return ro.disconnect(); layoutBoard(); placeTokens(); }); ro.observe(ui.stage); }
     Music.setMode(isMid() ? 'midnight' : 'party'); Music.start();
-    placeTokens(); render(); setActions('wait');
+    layoutBoard(); placeTokens(); render(); setActions('wait');
     pump();
   }
+  // 手机上看身份：弹出两张卡，按住翻开
+  function showHand() {
+    const ids = priv ? priv.ids : [];
+    modal({ title: '我的身份', dismiss: 'x', buttons: [{ label: '收起', value: 'x', kind: 'ghost' }], mount: m => {
+      const row = h(`<div class="idhand" style="justify-content:center">${ids.map(c => `<div class="flip ${G.chars[c].alive ? '' : 'flipped'}" style="width:120px;height:168px">${''}<div class="inner"><div class="face back">${Art.cardBack()}</div>${idFront(c, G.chars[c].alive ? '' : '已死', 'player')}</div></div>`).join('')}</div>`);
+      m.querySelector('.body').append(row, h('<div class="hint" style="text-align:center;margin-top:10px">点卡片翻开 · 小心别被旁边的人看到</div>'));
+      row.querySelectorAll('.flip').forEach((f, i) => { if (!G.chars[ids[i]].alive) { f.querySelector('.stamp').classList.add('show'); return; } f.onclick = () => { f.classList.toggle('flipped'); sfx('cardFlip'); }; });
+    } });
+  }
 
+  // ---------- 棋盘排版：房子按可用空间缩放，宾客站在各自房间的地板上 ----------
+  function layoutBoard() {
+    if (!ui.stage || !ui.stage.isConnected) return;
+    const r = ui.stage.getBoundingClientRect(), pad = 6;
+    const f = House.fit(Math.max(50, r.width - pad * 2), Math.max(50, r.height - pad * 2));
+    ui.u = f.u;
+    Object.assign(ui.board.style, { width: f.w + 'px', height: f.h + 'px', left: (r.width - f.w) / 2 + 'px', top: (r.height - f.h) / 2 + 'px' });
+    ui.board.style.setProperty('--lf', Math.max(10, Math.min(14, f.u * .62)) + 'px');
+    ui.board.querySelectorAll('.rlabel').forEach(el => { const [x, y] = House.px(f.u, ...House.labelAt(+el.dataset.z)); el.style.left = x + 'px'; el.style.top = y + 'px'; });
+  }
   function placeTokens() {
-    if (!ui.board || !ui.board.isConnected) return;
-    const boxes = ui.board.querySelectorAll('.toks');
+    if (!ui.board || !ui.board.isConnected || !ui.u) return;
+    const u = ui.u;
     const byZone = [[], [], [], [], []];
     [...G.chars].sort((a, b) => (b.alive - a.alive) || a.id - b.id).forEach(c => byZone[c.zone].push(c.id));
-    byZone.forEach((ids, z) => ids.forEach(id => boxes[z].append(tokEls[id])));
-    ui.board.querySelectorAll('.zone').forEach((el, z) => (el.querySelector('.cnt').textContent = `${G.chars.filter(c => c.alive && c.zone === z).length} 人`));
+    byZone.forEach((ids, z) => {
+      if (!ids.length) return;
+      const { pos, d } = House.slots(z, ids.length);
+      const tk = Math.round(Math.max(22, Math.min(64, u * 2.3, d * u * 1.12)));
+      const lbf = Math.max(9, Math.min(13, tk * .3));
+      ids.forEach((id, i) => {
+        const el = tokEls[id], [x, y] = House.px(u, pos[i][0], pos[i][1]);
+        el.style.setProperty('--tk', tk + 'px'); el.style.setProperty('--lbf', lbf + 'px');
+        el.style.left = (x - tk / 2) + 'px'; el.style.top = (y - tk + 3) + 'px';
+        el.style.zIndex = 10 + Math.round((pos[i][0] + pos[i][1]) * 4) + (G.chars[id].alive ? 0 : -1);
+      });
+    });
+    ui.board.querySelectorAll('.rlabel').forEach(el => { const z = +el.dataset.z; el.querySelector('.cnt').textContent = `${G.chars.filter(c => c.alive && c.zone === z).length} 人`; });
   }
   function flipPlace(focus) {
     const first = {};
@@ -2110,31 +2325,66 @@ const Net = (() => {
     }
   }
   const noteFor = q => (priv && priv.notes || []).find(n => n.q === q);
+  // 推理笔记 → 每个角色的嫌疑光：取最可能的那位对手的颜色，亮度按百分比
+  function suspicion() {
+    const out = {};
+    if (!priv || settings.glow === false) return out;
+    for (const n of priv.notes || []) {
+      const q = G.players[n.q]; if (!q || q.out || (ui.focus >= 0 && ui.focus !== n.q)) continue;
+      const top = (n.sus[0] || [0, 0])[1];
+      if (n.total > 9 && top < 15) continue;   // 线索不足：不乱发光
+      for (const [c, pct] of n.sus) { if (pct < 12) continue; if (!out[c] || out[c].pct < pct) out[c] = { q: n.q, pct, color: q.color }; }
+    }
+    return out;
+  }
   function render() {
     if (!G || !document.getElementById('plist')) return;
     const ck = document.getElementById('clock');
     const mid = isMid();
     ck.className = 'clock' + (mid ? ' mid' : '');
     ck.innerHTML = `<b>第 ${G.round} 轮</b><span class="hint">${mid ? `午夜 · 黄色也杀人 · 第 ${dawnR()} 轮天亮` : `距午夜还有 ${midR() - G.round} 轮`}</span>`;
+    // 轮到谁：顶栏标签 + 名单高亮 + 棋盘描边，三处一起提示
+    const cur = G.players[G.cur], myTurn = G.cur === ME && !G.over;
+    const tp = document.getElementById('turn');
+    if (tp && cur) {
+      const pd = G.pending && G.pending.seat === G.cur ? PHASE_TXT[G.pending.phase] : '';
+      tp.className = 'turnpill' + (myTurn ? ' me' : '');
+      tp.style.setProperty('--pc', myTurn ? 'var(--gold)' : cur.color);
+      tp.innerHTML = G.over ? '<b>派对结束</b>' : `<i class="dot"></i><b>${myTurn ? '轮到你了' : `轮到 ${esc(cur.name)}`}</b><span class="ph">${myTurn ? '' : pd}</span>`;
+    }
+    if (ui.stage) ui.stage.style.setProperty('--pc', G.over ? 'transparent' : myTurn ? 'var(--gold)' : cur ? cur.color : 'transparent');
     document.getElementById('plist').innerHTML = G.players.map(p => {
       const sub = p.out ? '出局 · 幽灵' : G.per === 2 ? `身份 ${p.n - p.dead.length}/${p.n}` : p.id === ME ? '你' : p.ai ? 'AI · 身份未知' : '身份未知';
-      return `<div class="pl ${G.cur === p.id && !G.over ? 'cur' : ''} ${p.out ? 'out' : ''}"><i class="dot" style="background:${p.color}"></i><div><div class="nm">${nm(p.id)}${p.ai && conn && conn.online ? ' <span class="hint">AI</span>' : ''}</div><div class="sub">${sub}</div></div><div class="coins" title="揭穿代币">${Array.from({ length: tokenMax() }, (_, i) => `<i class="coin ${i < p.tokens ? '' : 'used'}"></i>`).join('')}</div></div>`;
+      return `<button class="pl ${G.cur === p.id && !G.over ? 'cur' : ''} ${p.out ? 'out' : ''} ${ui.focus === p.id ? 'focus' : ''}" data-q="${p.id}" style="--pc:${p.id === ME ? 'var(--gold)' : p.color}"><span class="turn">${p.id === ME ? '你的回合' : '回合中'}</span><i class="dot" style="background:${p.color}"></i><div><div class="nm">${nm(p.id)}${p.ai && conn && conn.online ? ' <span class="hint">AI</span>' : ''}</div><div class="sub">${sub}</div></div><div class="coins" title="揭穿代币">${Array.from({ length: tokenMax() }, (_, i) => `<i class="coin ${i < p.tokens ? '' : 'used'}"></i>`).join('')}</div></button>`;
     }).join('');
+    document.querySelectorAll('#plist .pl').forEach(b => (b.onclick = () => { const q = +b.dataset.q; if (q === ME) { sfx('uiClick'); return showHand(); } focusOpp(q); }));
+    const sus = suspicion();
+    if (ui.board) ui.board.classList.toggle('focusing', ui.focus >= 0 && settings.glow !== false);
+    const myZones = new Set(G.chars.filter(c => c.alive && mine(c.id)).map(c => c.zone));
+    if (ui.board) {
+      ui.board.querySelectorAll('.house .zone').forEach(g => g.classList.toggle('mine', myZones.has(+g.dataset.z)));
+      ui.board.querySelectorAll('.rlabel').forEach(el => el.classList.toggle('here', myZones.has(+el.dataset.z)));
+    }
     for (const c of G.chars) {
       const el = tokEls[c.id];
       if (!el) continue;
+      const body = el.querySelector('.body');
       el.classList.toggle('dead', !c.alive);
       el.classList.toggle('mine', mine(c.id));
-      el.querySelectorAll('.you,.tag,.know').forEach(x => x.remove());
-      if (mine(c.id)) el.prepend(h('<span class="you">你</span>'));
-      if (tags[c.id] !== undefined && c.alive) el.append(h(`<span class="tag" style="background:${G.players[tags[c.id]].color}" title="你的标记"></span>`));
+      el.classList.toggle('turnme', myTurn && mine(c.id) && c.alive);
+      body.querySelectorAll('.you,.tag,.know,.pct').forEach(x => x.remove());
+      if (mine(c.id)) body.prepend(h('<span class="you">你</span>'));
+      if (tags[c.id] !== undefined && c.alive) body.append(h(`<span class="tag" style="background:${G.players[tags[c.id]].color}" title="你的标记"></span>`));
       const k = priv && priv.know ? priv.know[c.id] : null;
       if (c.alive && !mine(c.id)) {
-        if (k === -1) el.append(h('<span class="know npc">NPC</span>'));
-        else if (k === -2) el.append(h('<span class="know pl">玩家</span>'));
-        else if (k !== null && k >= 0) el.append(h(`<span class="know pl" style="background:${G.players[k].color};color:#111">${nm(k)}</span>`));
+        if (k === -1) body.append(h('<span class="know npc">NPC</span>'));
+        else if (k === -2) body.append(h('<span class="know pl">玩家</span>'));
+        else if (k !== null && k >= 0) body.append(h(`<span class="know pl" style="background:${G.players[k].color};color:#111">${nm(k)}</span>`));
       }
-      el.setAttribute('aria-label', `${c.name}${c.alive ? '' : '（已死亡）'}`);
+      const sv = c.alive && !mine(c.id) && k !== -1 ? sus[c.id] : null;
+      el.classList.toggle('sus', !!sv); el.classList.toggle('hot', !!sv && sv.pct >= 40); el.classList.toggle('sure', !!sv && sv.pct >= 100);
+      if (sv) { el.style.setProperty('--sc', sv.color); el.style.setProperty('--sp', Math.min(1, .25 + sv.pct / 80).toFixed(2)); if (sv.pct >= 20) body.append(h(`<span class="pct" title="推理笔记：可能是 ${esc(G.players[sv.q].name)}">${sv.pct >= 100 ? '确定' : sv.pct + '%'}</span>`)); }
+      el.setAttribute('aria-label', `${c.name}${c.alive ? '' : '（已死亡）'}${sv ? `，可能是 ${G.players[sv.q].name}（${sv.pct}%）` : ''}`);
     }
     const hand = document.getElementById('hand');
     const ids = priv ? priv.ids : [];
@@ -2157,13 +2407,21 @@ const Net = (() => {
         const left = q.n - dead.length;
         inner = (dead.length ? `<div class="hint">已死身份：${dead.map(c => G.chars[c].name).join('、')}</div>` : '') +
           (sure.length ? `<div style="color:var(--danger);font-weight:700">确定是：${sure.map(([c]) => G.chars[c].name).join('、')}</div>` : '') +
-          (sure.length >= left ? '' : n.total > 9 && (n.sus[0] || [0, 0])[1] < 15 ? `<div class="hint">线索不足：可能是 ${n.total} 人中的任何一位。等他杀人、监控或揭穿时就会露出马脚。</div>` :
+          (sure.length >= left ? '' : n.total > 9 && (n.sus[0] || [0, 0])[1] < 15 ? `<div class="hint">线索不足：${n.total} 人都有可能</div>` :
             `<div class="nb-sus">${n.sus.slice(0, 6).map(([c, pct]) => `<span class="sus ${pct > 40 ? 'hot' : ''}" data-c="${c}"><span class="mini">${Art.portrait(c)}</span>${G.chars[c].name}<i>${pct}%</i></span>`).join('')}${n.total > 6 ? `<span class="hint">等 ${n.total} 人</span>` : ''}</div>`);
       }
-      return `<div class="nb-row"><div class="nb-head"><i class="dot" style="width:10px;height:10px;border-radius:50%;background:${q.color}"></i>${esc(q.name)}${q.out ? ' <span class="hint">（幽灵）</span>' : ''}</div>${inner}</div>`;
+      return `<div class="nb-row"><button class="nb-head" data-q="${q.id}" aria-pressed="${ui.focus === q.id}" title="只看他的嫌疑人"><i class="dot" style="background:${q.color}"></i>${esc(q.name)}${q.out ? ' <span class="hint">（幽灵）</span>' : ''}</button>${inner}</div>`;
     }).join('');
     notes.querySelectorAll('.sus').forEach(s => (s.onclick = () => { sfx('uiClick'); charDetail(+s.dataset.c); }));
+    notes.querySelectorAll('.nb-head').forEach(b => (b.onclick = () => focusOpp(+b.dataset.q)));
     if (!ui.prompting) setActions(G.players[ME].out && !G.over ? 'spectate' : 'wait');
+  }
+  // 点某个对手：棋盘上只亮他的嫌疑人，再点一次恢复
+  function focusOpp(q) {
+    sfx('uiClick');
+    ui.focus = ui.focus === q ? -1 : q;
+    if (settings.glow === false && ui.focus >= 0) { settings.glow = true; const b = document.getElementById('b-glow'); if (b) { b.setAttribute('aria-pressed', 'true'); b.textContent = '嫌疑光 开'; } }
+    render();
   }
 
   // ---------- 行动栏 ----------
@@ -2171,10 +2429,11 @@ const Net = (() => {
     const bar = document.getElementById('actions');
     if (!bar || !G) return;
     const p = G.players[G.cur];
+    bar.classList.toggle('mine', mode === 'human' || (mode === 'busy' && G.cur === ME));
     if (mode === 'human') {
       const tgt = E.accuseTargets(G, ME);
       const why = G.players[ME].tokens <= 0 ? '揭穿代币已经用完' : !tgt.length ? '你的房间里没有别人可以指认' : '指认同房间的某人是某位玩家';
-      bar.innerHTML = `<div class="status"><b>你的回合</b><span class="why">掷骰子，或者花 1 枚代币揭穿一个人</span></div>
+      bar.innerHTML = `<div class="status"><b>你的回合</b><span class="why">掷骰子，或者花代币揭穿同房间的人</span></div>
         <button class="btn primary big" id="a-roll">${ICON_DIE} 掷骰子</button>
         <button class="btn big" id="a-acc" ${tgt.length ? '' : 'aria-disabled="true"'} style="${tgt.length ? '' : 'opacity:.4'}" title="${why}">揭穿 <span class="coins">${Array.from({ length: tokenMax() }, (_, i) => `<i class="coin ${i < G.players[ME].tokens ? '' : 'used'}"></i>`).join('')}</span></button>
         <div class="why" style="flex-basis:100%">${tgt.length ? '' : '揭穿不可用：' + why}</div>`;
@@ -2208,13 +2467,18 @@ const Net = (() => {
     });
   }
   function onTokenClick(c) { if (selecting) return selecting(c); sfx('uiClick'); charDetail(c); }
-  async function pickZone(title, body, exclude) {
-    return modal({
-      title, body, prompt: true, mount: (m, close) => {
-        const g = h(`<div class="zonepick">${Z.map((z, i) => `<button style="--zc:${ZC[i]}" data-z="${i}" ${i === exclude ? 'disabled' : ''}>${z.c}·${z.n}</button>`).join('')}</div>`);
-        m.querySelector('.body').append(g);
-        g.querySelectorAll('button').forEach(b => (b.onclick = () => { sfx('selectPick'); close(+b.dataset.z); }));
-      },
+  // 选房间：直接点棋盘上的房间，或点提示条里的按钮
+  function pickZone(title, body, exclude) {
+    return new Promise(res => {
+      sfx('selectHighlight');
+      const pb = document.getElementById('prompt');
+      const zs = ui.board.querySelectorAll('.house .zone');
+      zs.forEach(g => { if (+g.dataset.z !== exclude) g.classList.add('pickable'); });
+      pb.innerHTML = `<div class="promptbar" style="flex-wrap:wrap"><span>${title} <span class="hint" style="font-weight:400">${body} 点一个房间</span></span><div class="zonepick" style="margin:0;flex:1 1 100%;grid-template-columns:repeat(5,minmax(0,1fr))">${Z.map((z, i) => `<button style="--zc:${ZC[i]};padding:6px 2px" data-z="${i}" ${i === exclude ? 'disabled' : ''}>${z.n}</button>`).join('')}</div></div>`;
+      const done = z => { ui.pickZ = null; ui.cancelSel = null; zs.forEach(g => g.classList.remove('pickable')); pb.innerHTML = ''; res(z); };
+      ui.pickZ = z => { if (z === exclude) return sfx('uiDisabled'); sfx('selectPick'); done(z); };
+      ui.cancelSel = () => done(undefined);
+      pb.querySelectorAll('button[data-z]').forEach(b => (b.onclick = () => ui.pickZ(+b.dataset.z)));
     });
   }
 
@@ -2348,7 +2612,7 @@ const Net = (() => {
     else if (e.t === 'midnight') await midnight();
     else if (e.t === 'round') render();
   }
-  function flashZone(z) { const el = ui.board && ui.board.querySelector(`.z${z}`); if (!el) return; el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), sp(900)); }
+  function flashZone(z) { const el = ui.board && ui.board.querySelector(`.house .z${z}`); if (!el) return; el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), sp(900)); }
   async function afterDeath(elim) {
     if (elim < 0 || elim === undefined) return;
     if (elim === ME) {
