@@ -353,6 +353,10 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold-h
 .detail { display: grid; grid-template-columns: 150px 1fr; gap: 16px; align-items: start; }
 @media (max-width: 460px) { .detail { grid-template-columns: 1fr; justify-items: center; text-align: center; } .detail .chips { justify-content: center; } }
 
+/* 教学视频 */
+.howto-btn { margin-top: 12px; font-size: 15px; padding: 10px 20px; }
+.video-ov .vbox { display: grid; gap: 10px; justify-items: center; max-height: 100%; }
+.video-ov video { display: block; max-width: min(100%, 520px); max-height: calc(100dvh - 90px); width: auto; height: auto; aspect-ratio: 9 / 16; background: #000; border: 1px solid var(--gold); box-shadow: 0 30px 80px rgba(0,0,0,.6); }
 /* 结算 */
 #result { display: grid; justify-items: center; align-content: start; gap: 18px; text-align: center; }
 .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 150px)); gap: 14px; justify-content: center; width: 100%; max-width: 900px; }
