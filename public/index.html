@@ -1705,8 +1705,8 @@ const Net = (() => {
     '<svg viewBox="0 0 60 60" class="glyph"><rect x="2" y="6" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><rect x="33" y="6" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><rect x="2" y="30" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><rect x="33" y="30" width="25" height="18" stroke="#fff" stroke-width="2.5" fill="none"/><path d="M20 56H40" stroke="#fff" stroke-width="3"/></svg>',
   ];
 
-  // 支持作者（Buy Me a Coffee）：填上链接就会出现在右上角；留空则不显示
-  const SUPPORT_URL = '';
+  // 支持作者（Ko-fi）：填上链接就会出现在右上角；留空则不显示
+  const SUPPORT_URL = 'https://ko-fi.com/flyhust06240';
   // 教学视频：服务器上有 public/media/howto.mp4 才显示按钮
   let HAS_VIDEO = false;
   const videoReady = window.MP_SERVER ? fetch('media/howto.mp4', { method: 'HEAD' }).then(r => (HAS_VIDEO = r.ok)).catch(() => false) : Promise.resolve(false);
