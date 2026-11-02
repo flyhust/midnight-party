@@ -13,9 +13,28 @@ const PORT = process.env.PORT || 8080;
 const INDEX = fs.readFileSync(path.join(__dirname, 'public/index.html'));
 const server = http.createServer((req, res) => {
   if (req.url === '/healthz') { res.writeHead(200); return res.end('ok'); }
+  if (req.url.startsWith('/media/')) return media(req, res);
   res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-cache' });
   res.end(INDEX);
 });
+// 教学视频等静态媒体：只认 public/media 里的固定文件名，支持 Range（iPhone 播视频必须）
+const MEDIA = { 'howto.mp4': 'video/mp4', 'howto.jpg': 'image/jpeg' };
+function media(req, res) {
+  const name = decodeURIComponent(req.url.slice(7).split('?')[0]);
+  const type = MEDIA[name];
+  const file = path.join(__dirname, 'public/media', name);
+  if (!type || !fs.existsSync(file)) { res.writeHead(404); return res.end(); }
+  const size = fs.statSync(file).size, m = /bytes=(\d*)-(\d*)/.exec(req.headers.range || '');
+  const head = { 'content-type': type, 'accept-ranges': 'bytes', 'cache-control': 'public, max-age=86400' };
+  if (m) {
+    let a = m[1] ? +m[1] : size - +m[2], b = m[1] && m[2] ? +m[2] : size - 1;
+    if (!(a >= 0 && a <= b && b < size)) { res.writeHead(416, { 'content-range': `bytes */${size}` }); return res.end(); }
+    res.writeHead(206, { ...head, 'content-range': `bytes ${a}-${b}/${size}`, 'content-length': b - a + 1 });
+    return fs.createReadStream(file, { start: a, end: b }).pipe(res);
+  }
+  res.writeHead(200, { ...head, 'content-length': size });
+  fs.createReadStream(file).pipe(res);
+}
 const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 16 * 1024 });
 
 const rooms = new Map();          // code -> room

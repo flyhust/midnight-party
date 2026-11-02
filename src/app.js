@@ -27,6 +27,9 @@
 
   // 支持作者（Buy Me a Coffee）：填上链接就会出现在右上角；留空则不显示
   const SUPPORT_URL = '';
+  // 教学视频：服务器上有 public/media/howto.mp4 才显示按钮
+  let HAS_VIDEO = false;
+  const videoReady = window.MP_SERVER ? fetch('media/howto.mp4', { method: 'HEAD' }).then(r => (HAS_VIDEO = r.ok)).catch(() => false) : Promise.resolve(false);
   const supportBtn = cls => SUPPORT_URL ? `<a class="iconbtn support ${cls || ''}" href="${SUPPORT_URL}" target="_blank" rel="noopener" title="喜欢这个游戏？请作者喝杯咖啡">☕ 支持作者</a>` : '';
 
   // G = 本机看到的局面（公开信息 + 自己的身份），priv = 自己的私密信息
@@ -124,12 +127,16 @@
       <p class="tagline">二十位宾客，几张假面。你是其中一人，你的对手也藏在人群里。在天亮前，成为最后一个活着的玩家。</p>
       <div class="cast-flow" aria-label="今晚的二十位宾客">${[[0, 3, 6, 10, 16, 11, 2, 13, 17, 8], [14, 5, 19, 1, 12, 9, 15, 4, 18, 7]].map((row, r) => `<div class="cast-row ${r ? 'rev' : ''}"><div class="cast-track">${[...row, ...row].map((c, i) => `<div class="mini" data-c="${c}" tabindex="0" style="--d:${((i * 0.37) % 3).toFixed(2)}s"><div class="mini-in">${Art.portrait(c)}</div><span>${E.CHARS[c][0]}</span></div>`).join('')}</div></div>`).join('')}</div>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn primary" id="solo" style="padding:14px 26px;font-size:16px">单人对战 AI</button><button class="btn" id="online" style="padding:14px 26px;font-size:16px">和朋友联机</button></div>
+      <button class="btn ghost howto-btn" id="howto" hidden>▶ 三分钟看懂怎么玩</button>
       <div class="hint" style="margin-top:14px">建议开启声音</div></div></section>`);
     app.append(s);
     wireCast(s.querySelector('.cast-flow'));
     const unlock = () => { SFX.init(); Music.init(); Music.setMode('party'); Music.start(); };
     s.querySelector('#solo').onclick = () => { unlock(); sfx('uiClick'); showSetup(); };
     s.querySelector('#online').onclick = () => { unlock(); sfx('uiClick'); showOnline(); };
+    const hb = s.querySelector('#howto');
+    hb.onclick = () => { unlock(); sfx('uiClick'); showVideo(); };
+    videoReady.then(ok => { if (ok) hb.hidden = false; });
   }
 
   const WHY = ["女伯爵请他来掌勺晚宴，菜单上有一道没人敢点的汤。", "女伯爵的私人医生，今晚他的药箱里少了一瓶药。", "受邀来唱压轴曲，她打算在今晚宣布一个秘密。", "来表演余兴节目，他的道具箱里刚好藏得下一个人。", "在这栋宅子里服务了三十年，今晚是他最后一班。", "来朗诵献给女伯爵的新诗，诗里藏着一个名字。", "来替孤儿院募捐，却在席上认出了一张旧面孔。", "自称来找灵感，其实是来核对他小说里的结局。", "本该在温室照看兰花，今晚却穿上了借来的礼服。", "混进来追查一桩旧丑闻，线人约他午夜见面。", "这是她的派对，也是她宣读遗嘱的夜晚。", "刚靠岸就收到请柬，他欠女伯爵一条船的人情。", "来为女伯爵画肖像，画布上却多出了一个人影。", "跟着乐队一起来，她要找出寄匿名信的人。", "今晚负责吧台，他知道谁在酒里加了东西。", "以老朋友的身份赴宴，口袋里有一封没拆的电报。", "被请来逗大家笑，可他自己一整晚都没笑过。", "来谈一笔生意，在场一半的人都在等他还钱。", "弹了一整晚的爵士，他只在等一首点歌。", "被雇来当保镖，却没人告诉他要保护谁。"];
@@ -367,6 +374,19 @@
   }
 
   // ---------- 规则 ----------
+  // 三分钟教学视频（服务器版才有：public/media/howto.mp4）
+  function showVideo() {
+    Music.duck(true);
+    const ov = h(`<div class="overlay video-ov"><div class="vbox"><video src="media/howto.mp4" poster="media/howto.jpg" controls playsinline autoplay preload="metadata"></video><button class="btn primary" id="vx">关闭</button></div></div>`);
+    const v = ov.querySelector('video');
+    const close = () => { if (!ov.isConnected) return; v.pause(); ov.remove(); Music.duck(false); document.removeEventListener('keydown', onKey); sfx('modalClose'); };
+    const onKey = e => { if (e.key === 'Escape') close(); };
+    document.addEventListener('keydown', onKey);
+    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+    ov.querySelector('#vx').onclick = close;
+    v.addEventListener('play', () => Music.duck(true));
+    document.body.append(ov);
+  }
   function showRules() {
     const fc = f => `<span class="facechip" style="background:${f === 'black' ? '#16121c' : `var(--z-${f})`};${f === 'yellow' ? 'color:#3a2a00' : ''}">${FACE[f].lb}</span>`;
     const pages = [
@@ -379,11 +399,11 @@
     let i = 0;
     modal({
       title: '规则', wide: true, dismiss: 'x', buttons: [], mount: (m, close) => {
-        const box = h(`<div class="rules"><div class="pg"></div><div class="dots">${pages.map(() => '<i></i>').join('')}</div><div class="btns"><button class="btn ghost" data-a="x">关闭</button><button class="btn" data-a="p">上一页</button><button class="btn primary" data-a="n">下一页</button></div></div>`);
+        const box = h(`<div class="rules"><div class="pg"></div><div class="dots">${pages.map(() => '<i></i>').join('')}</div><div class="btns">${HAS_VIDEO ? '<button class="btn ghost" data-a="v" style="margin-right:auto">▶ 看视频</button>' : ''}<button class="btn ghost" data-a="x">关闭</button><button class="btn" data-a="p">上一页</button><button class="btn primary" data-a="n">下一页</button></div></div>`);
         m.querySelector('.body').append(box);
         const draw = () => { box.querySelector('.pg').innerHTML = `<div class="eyebrow">${i + 1} / ${pages.length}</div><h3 class="h-title" style="margin:4px 0 10px;color:var(--gold-hi)">${pages[i][0]}</h3>${pages[i][1]}`; box.querySelectorAll('.dots i').forEach((d, k) => d.classList.toggle('on', k === i)); box.querySelector('[data-a=p]').disabled = i === 0; box.querySelector('[data-a=n]').textContent = i === pages.length - 1 ? '明白了' : '下一页'; };
         draw();
-        box.onclick = e => { const a = e.target.dataset.a; if (!a) return; if (a === 'x') return close('x'); if (a === 'p') { i--; sfx('cardFlip'); draw(); } if (a === 'n') { if (i === pages.length - 1) return close('x'); i++; sfx('cardFlip'); draw(); } };
+        box.onclick = e => { const a = e.target.dataset.a; if (!a) return; if (a === 'x') return close('x'); if (a === 'v') { close('x'); return showVideo(); } if (a === 'p') { i--; sfx('cardFlip'); draw(); } if (a === 'n') { if (i === pages.length - 1) return close('x'); i++; sfx('cardFlip'); draw(); } };
       },
     });
   }
