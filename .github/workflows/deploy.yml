@@ -1,0 +1,23 @@
+# 推到 main 之后，通知 VPS 上的 Coolify 重新部署 midnight.victoraaa.tech
+# 需要在 GitHub 仓库 Settings → Secrets and variables → Actions 里加两个 secret：
+#   COOLIFY_WEBHOOK：Coolify 应用页面 → Webhooks → Deploy Webhook 的网址
+#   COOLIFY_TOKEN：Coolify → Keys & Tokens → API tokens 新建的 token（勾选 deploy 权限）
+name: 部署到 Coolify
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 通知 Coolify 部署
+        env:
+          COOLIFY_WEBHOOK: ${{ secrets.COOLIFY_WEBHOOK }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+        run: |
+          if [ -z "$COOLIFY_WEBHOOK" ] || [ -z "$COOLIFY_TOKEN" ]; then
+            echo "::warning::还没设置 COOLIFY_WEBHOOK / COOLIFY_TOKEN，跳过部署"
+            exit 0
+          fi
+          curl -fsS --retry 3 -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_WEBHOOK"
